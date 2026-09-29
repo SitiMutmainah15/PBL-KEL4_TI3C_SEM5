@@ -1,15 +1,11 @@
-# PBL-KEL5_TI3C_SEM5
+# PBL-KEL4_TI3C_SEM5
 
-## Arsitektur yang digunakan
+## Arsitektur yang Digunakan
 
-EcoPlant menggunakan Flutter dengan Firebase sebagai layanan penyimpanan data.
-Backend Laravel tidak digunakan. Inferensi model direncanakan berjalan di perangkat
-menggunakan TensorFlow Lite.
+EcoPlant menggunakan Flutter dengan Firebase sebagai layanan backend dan penyimpanan data.
+Backend Laravel telah dihapus dari repositori dan tidak digunakan lagi. Inferensi model direncanakan berjalan langsung di perangkat (*on-device*) menggunakan TensorFlow Lite (TFLite).
 
-Integrasi Firebase belum diimplementasikan: aplikasi saat ini masih menggunakan
-stub untuk analisis dan penyimpanan riwayat. Lihat [arsitektur](doc/architecture.md)
-untuk rencana integrasi. Folder `laravel_api/` masih disimpan sebagai kode lama,
-bukan bagian dari aplikasi aktif dan tidak perlu dijalankan.
+Inisialisasi Firebase Core telah diterapkan pada aplikasi (`Firebase.initializeApp` dengan `firebase_options.dart` dan `google-services.json`). Layanan backend spesifik (seperti Cloud Firestore / Cloud Storage untuk riwayat deteksi) dan model TFLite saat ini masih dalam proses integrasi bertahap. Lihat [arsitektur](doc/architecture.md) untuk detail rencana sistem.
 
 ## Struktur Folder
 
@@ -19,41 +15,48 @@ Berikut struktur utama proyek. Folder dependensi, cache, hasil build, dan metada
 PBL-KEL4_TI3C_SEM5/
 ├── .vscode/                    # Konfigurasi workspace VS Code
 ├── doc/                        # Dokumentasi proyek
-│   └── architecture.md         # Dokumentasi arsitektur
+│   └── architecture.md         # Dokumentasi arsitektur sistem
 ├── ecoplant/                   # Aplikasi Flutter EcoPlant
-│   ├── android/                # Proyek platform Android
+│   ├── android/                # Proyek platform Android (konfigurasi Google Services & Gradle)
 │   ├── assets/                 # Folder aset aplikasi
-│   │   └── images/             # Aset gambar
+│   │   └── images/             # Aset gambar aplikasi
 │   ├── ios/                    # Proyek platform iOS
 │   ├── lib/                    # Kode sumber Dart
-│   │   ├── core/               # Tema dan widget bersama
+│   │   ├── core/               # Tema, konstanta, dan widget bersama
 │   │   ├── features/           # Modul fitur aplikasi
-│   │   │   ├── detection/      # Model deteksi dan layar hasil
+│   │   │   ├── detection/      # Model domain deteksi dan layar hasil
 │   │   │   ├── history/        # Layar dan repository riwayat
 │   │   │   ├── home/           # Layar beranda
 │   │   │   └── scan/           # Layar, controller, dan kamera pemindaian
-│   │   ├── app.dart            # Konfigurasi aplikasi
-│   │   └── main.dart           # Titik masuk aplikasi
+│   │   ├── app.dart            # Konfigurasi utama aplikasi Flutter
+│   │   ├── firebase_options.dart # Konfigurasi platform Firebase
+│   │   └── main.dart           # Titik masuk aplikasi (inisialisasi Firebase & Riverpod)
 │   ├── linux/                  # Proyek platform Linux
 │   ├── macos/                  # Proyek platform macOS
-│   ├── test/                   # Pengujian aplikasi
+│   ├── test/                   # Pengujian unit & widget aplikasi
 │   ├── web/                    # Proyek platform web
 │   ├── windows/                # Proyek platform Windows
-│   ├── analysis_options.yaml   # Aturan analisis kode Dart
-│   ├── IMPLEMENTATION.md       # Catatan implementasi
-│   ├── pubspec.yaml            # Dependensi dan konfigurasi Flutter
-│   └── README.md               # Panduan aplikasi Flutter
-├── laravel_api/                # Kode lama, tidak digunakan
-├── qa/                         # Folder pemeriksaan kualitas (saat ini kosong)
-├── training/                   # Pelatihan model
-│   ├── artifacts/              # Folder artefak pelatihan
-│   ├── OriginalSet/            # Folder dataset
+│   ├── analysis_options.yaml   # Aturan linting dan analisis kode Dart
+│   ├── firebase.json           # Konfigurasi Firebase CLI
+│   ├── IMPLEMENTATION.md       # Catatan implementasi teknis UI & arsitektur
+│   ├── pubspec.yaml            # Dependensi dan metadata proyek Flutter
+│   └── README.md               # Panduan aplikasi Flutter EcoPlant
+├── qa/                         # Folder pemeriksaan kualitas
+├── training/                   # Pelatihan model machine learning
+│   ├── artifacts/              # Artefak data (laporan QA & manifest split dataset)
+│   │   ├── data_qa_report.json # Laporan pemeriksaan integritas data & deduplikasi
+│   │   └── split_manifest.json # Daftar pembagian dataset per kelas & split
+│   ├── dataset/                # Dataset terbagi siap latih (split 60:20:20)
+│   │   ├── train/              # Data latih (cordana, healthy, pestalotiopsis, sigatoka)
+│   │   ├── val/                # Data validasi
+│   │   └── test/               # Data uji
+│   ├── OriginalSet/            # Dataset mentah asli BananaLSD
 │   │   ├── cordana/            # Kelas cordana
 │   │   ├── healthy/            # Kelas daun sehat
 │   │   ├── pestalotiopsis/     # Kelas pestalotiopsis
 │   │   └── sigatoka/           # Kelas sigatoka
-│   └── train_banana.py         # Skrip pelatihan model daun pisang
+│   └── train_banana.ipynb      # Jupyter Notebook pelatihan model daun pisang
 └── README.md                   # Dokumentasi utama proyek
 ```
 
-Folder lokal seperti `ecoplant/.dart_tool/`, `ecoplant/build/`, dan `laravel_api/vendor/` tidak ditampilkan di atas karena berisi cache, hasil build, atau dependensi.
+Folder lokal seperti `ecoplant/.dart_tool/`, `ecoplant/build/`, dan `.venv/` tidak ditampilkan di atas karena berisi cache, virtual environment, hasil build, atau dependensi lokal.
