@@ -2,7 +2,7 @@
 
 Aplikasi Flutter Android untuk identifikasi awal kondisi daun pisang.
 Tahap saat ini: UI dan service stub, sesuai persetujuan pengguna.
-Analisis TFLite dan penyimpanan Supabase belum dihubungkan; tidak ada prediksi
+Analisis TFLite dan penyimpanan Firebase belum dihubungkan; tidak ada prediksi
 atau riwayat palsu pada aplikasi.
 
 ```powershell

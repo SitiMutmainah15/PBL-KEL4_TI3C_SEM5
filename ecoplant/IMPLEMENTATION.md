@@ -21,7 +21,7 @@ dan service stub tanpa prediksi palsu pada 24 September 2026.
 ## Batas tahap ini
 
 Stub analisis dan riwayat sengaja mengembalikan kegagalan yang jelas. Tidak ada
-TFLite, Supabase, schema database, autentikasi, atau klaim akurasi yang dibuat.
+TFLite, Firebase, schema database, autentikasi, atau klaim akurasi yang dibuat.
 Hasil/sukses penyimpanan hanya diuji menggunakan dependency override di `test/`.
 Daftar riwayat production menampilkan layanan belum tersedia, bukan menganggap
 kegagalan koneksi sebagai daftar kosong.
@@ -35,7 +35,7 @@ terkurasi disetujui. Halaman hasil tidak dapat dicapai dari stub analisis produc
 
 Tahap integrasi berikut memerlukan model `.tflite`, urutan label dari metadata,
 spesifikasi preprocessing training, bukti evaluasi, foto hero, konten penyakit,
-dan keputusan penyimpanan/identitas Supabase. Temporary path foto belum menjadi
+serta konfigurasi proyek Firebase dan keputusan identitas pengguna. Temporary path foto belum menjadi
 penyimpanan permanen; repository nyata harus menyalin/upload foto sebelum
 mengonfirmasi penyimpanan. Tidak ada pengiriman foto pada tahap ini.
 

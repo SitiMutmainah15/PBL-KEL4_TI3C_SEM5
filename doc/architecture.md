@@ -26,9 +26,12 @@ Arsitektur EcoPlant AI harus:
 - `tflite_flutter`
 
 ### Backend / Persistence
-- Supabase
-  - database untuk metadata riwayat,
-  - storage bila gambar memang disimpan di cloud.
+- Firebase, sesuai keputusan pengguna pada 29 September 2026.
+  - Rencana: Cloud Firestore untuk metadata riwayat.
+  - Rencana: Cloud Storage for Firebase bila gambar disimpan di cloud.
+- Tidak menggunakan backend Laravel.
+- Status implementasi: repository riwayat masih stub; konfigurasi dan integrasi
+  Firebase belum tersedia di aplikasi.
 
 ### ML Development
 - Python
@@ -58,7 +61,7 @@ Arsitektur EcoPlant AI harus:
 └───────────────┬──────────┘  └─────┬───────────┘
                 │                   │
 ┌───────────────▼──────────┐  ┌─────▼───────────┐
-│      ML Data Source      │  │ Supabase Source │
+│      ML Data Source      │  │ Firebase Source │
 │ preprocessing            │  │ db / storage    │
 │ TFLite inference         │  │ repository      │
 └───────────────┬──────────┘  └─────────────────┘
@@ -77,7 +80,7 @@ Gunakan **feature-first + layered separation**.
 Tidak perlu menerapkan clean architecture secara dogmatis dengan terlalu banyak abstraction. Prinsip utamanya:
 
 - UI tidak memanggil TensorFlow Lite langsung.
-- UI tidak melakukan query Supabase langsung.
+- UI tidak melakukan query Firebase langsung.
 - Repository/service tidak mengatur layout.
 - ML preprocessing berada di satu tempat.
 - Mapping class label berada di satu source of truth.
@@ -123,7 +126,7 @@ lib/
 │       ├── domain/
 │       ├── data/
 │       │   ├── history_repository.dart
-│       │   └── supabase_history_repository.dart
+│       │   └── firebase_history_repository.dart
 │       └── presentation/
 │           ├── history_page.dart
 │           └── history_detail_page.dart
@@ -267,26 +270,26 @@ Jangan menyimpan seluruh business logic di Widget.
 
 ---
 
-## 10. Supabase Design
+## 10. Firebase Design
 
-Proposal menggunakan Supabase untuk database dan penyimpanan data riwayat.
+Firebase dipilih sebagai layanan penyimpanan. Desain berikut merupakan rencana integrasi, belum implementasi aktif.
 
-### Suggested table: `detections`
+### Rencana koleksi Cloud Firestore: `detections`
 
 ```text
-id                uuid / bigint
-user_id           uuid nullable/required based on auth design
-predicted_class   text
-confidence        numeric
-image_url         text nullable
-model_version     text
-created_at        timestamptz
+id                string (document ID)
+user_id           string (Firebase Auth UID, sesuai keputusan identitas)
+predicted_class   string
+confidence        number
+image_url         string nullable
+model_version     string
+created_at        timestamp
 ```
 
 ### Important
-- Jangan simpan service-role key di aplikasi.
+- Jangan simpan service account private key atau kredensial Admin SDK di aplikasi.
 - Gunakan environment/config yang aman.
-- Jika menggunakan per-user cloud history, gunakan Supabase Auth + RLS.
+- Jika menggunakan per-user cloud history, gunakan Firebase Authentication + Security Rules yang membatasi akses berdasarkan UID.
 - Jangan menambahkan layar login hanya untuk memenuhi kebutuhan teknis tanpa keputusan produk.
 
 ### Recommended MVP behavior
@@ -343,7 +346,7 @@ data implementation → external SDK
 ```
 
 ### Forbidden
-- Widget → Supabase SDK langsung.
+- Widget → Firebase SDK langsung.
 - Widget → TFLite interpreter langsung.
 - Result screen melakukan preprocessing.
 - History repository memanggil model ML.
@@ -378,7 +381,7 @@ UI tidak perlu menampilkan stack trace.
 - menampilkan hasil dan disease info statis.
 
 ### May require network
-- menyimpan riwayat ke Supabase,
+- menyimpan riwayat ke Firebase,
 - mengambil riwayat cloud,
 - membuka image URL cloud.
 
@@ -389,8 +392,8 @@ Jangan membuat koneksi internet sebagai syarat menjalankan klasifikasi.
 ## 16. Security
 
 - Jangan commit `.env`.
-- Jangan commit secret/service-role key.
-- RLS wajib jika data user disimpan di Supabase.
+- Jangan commit secret atau service account private key.
+- Security Rules wajib membatasi akses data pengguna di Cloud Firestore dan Cloud Storage.
 - Validasi tipe dan ukuran image sebelum upload.
 - Simpan data minimum yang diperlukan.
 - Hindari mencetak token atau secret ke log.
@@ -473,7 +476,7 @@ Sebelum demo:
 - label mapping tervalidasi,
 - build release berhasil,
 - kamera dan galeri diuji di real device,
-- Supabase configuration valid,
+- Firebase configuration valid,
 - tidak ada secret di repository.
 
 ---
@@ -483,11 +486,16 @@ Sebelum demo:
 Coding agent tidak boleh:
 - mengganti Riverpod tanpa keputusan tim,
 - mengganti TFLite dengan server inference,
-- mengganti Supabase tanpa keputusan tim,
+- mengganti Firebase tanpa keputusan tim,
 - menambah backend baru,
-- menambah Firebase hanya karena lebih familiar,
 - mengubah class label model,
 - mengubah preprocessing tanpa bukti dari pipeline training,
 - membuat arsitektur terlalu kompleks untuk kebutuhan MVP.
 
 Jika ditemukan kebutuhan yang bertentangan dengan dokumen ini, buat catatan keputusan terlebih dahulu sebelum implementasi.
+
+
+## Referensi integrasi Firebase
+
+- [Konfigurasi Firebase untuk Flutter](https://firebase.google.com/docs/flutter/setup).
+- [Cloud Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started).

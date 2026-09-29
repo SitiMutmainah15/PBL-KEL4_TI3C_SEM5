@@ -1,5 +1,16 @@
 # PBL-KEL5_TI3C_SEM5
 
+## Arsitektur yang digunakan
+
+EcoPlant menggunakan Flutter dengan Firebase sebagai layanan penyimpanan data.
+Backend Laravel tidak digunakan. Inferensi model direncanakan berjalan di perangkat
+menggunakan TensorFlow Lite.
+
+Integrasi Firebase belum diimplementasikan: aplikasi saat ini masih menggunakan
+stub untuk analisis dan penyimpanan riwayat. Lihat [arsitektur](doc/architecture.md)
+untuk rencana integrasi. Folder `laravel_api/` masih disimpan sebagai kode lama,
+bukan bagian dari aplikasi aktif dan tidak perlu dijalankan.
+
 ## Struktur Folder
 
 Berikut struktur utama proyek. Folder dependensi, cache, hasil build, dan metadata Git tidak dirinci.
@@ -32,34 +43,7 @@ PBL-KEL4_TI3C_SEM5/
 │   ├── IMPLEMENTATION.md       # Catatan implementasi
 │   ├── pubspec.yaml            # Dependensi dan konfigurasi Flutter
 │   └── README.md               # Panduan aplikasi Flutter
-├── laravel_api/                # Proyek backend Laravel
-│   ├── app/                    # Kode utama backend
-│   │   ├── Http/Controllers/   # Controller HTTP
-│   │   ├── Models/             # Model data
-│   │   └── Providers/          # Service provider
-│   ├── bootstrap/              # Inisialisasi framework
-│   ├── config/                 # Konfigurasi aplikasi
-│   ├── database/               # Definisi dan pengisian database
-│   │   ├── factories/          # Factory data pengujian
-│   │   ├── migrations/         # Migrasi skema database
-│   │   └── seeders/            # Pengisian data awal
-│   ├── public/                 # Titik masuk web dan aset publik
-│   ├── resources/              # Sumber tampilan dan aset frontend
-│   │   ├── css/                # Stylesheet
-│   │   ├── js/                 # JavaScript
-│   │   └── views/              # Template Blade
-│   ├── routes/                 # Definisi rute web dan console
-│   ├── storage/                # File aplikasi, cache, dan log
-│   │   ├── app/                # Penyimpanan file aplikasi
-│   │   ├── framework/          # File runtime framework
-│   │   └── logs/               # Log aplikasi
-│   ├── tests/                  # Pengujian backend
-│   │   ├── Feature/            # Pengujian fitur
-│   │   └── Unit/               # Pengujian unit
-│   ├── artisan                 # CLI Laravel
-│   ├── composer.json           # Dependensi PHP
-│   ├── package.json            # Dependensi frontend
-│   └── README.md               # Dokumentasi Laravel
+├── laravel_api/                # Kode lama, tidak digunakan
 ├── qa/                         # Folder pemeriksaan kualitas (saat ini kosong)
 ├── training/                   # Pelatihan model
 │   ├── artifacts/              # Folder artefak pelatihan
