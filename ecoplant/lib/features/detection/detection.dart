@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'tflite_detection_service.dart';
 
 enum LeafClass {
   healthy('Healthy'),
@@ -58,8 +59,8 @@ class UnavailableDetectionService implements DetectionService {
   }
 }
 
-final detectionServiceProvider = Provider<DetectionService>(
-  (ref) => const UnavailableDetectionService(),
-);
+final detectionServiceProvider = Provider<DetectionService>((ref) {
+  return TfliteDetectionService();
+});
 const resultDisclaimer =
     'Hasil ini merupakan prediksi model berdasarkan citra daun, bukan diagnosis pasti. Konsultasikan dengan tenaga ahli jika gejala berlanjut.';

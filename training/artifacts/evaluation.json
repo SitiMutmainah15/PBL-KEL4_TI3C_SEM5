@@ -1,0 +1,38 @@
+{
+  "metrics": {
+    "accuracy": 0.9365079402923584,
+    "loss": 0.17491641640663147
+  },
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "confusion_matrix": [
+    [
+      33,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      18,
+      2,
+      1
+    ],
+    [
+      0,
+      1,
+      33,
+      1
+    ],
+    [
+      0,
+      1,
+      4,
+      93
+    ]
+  ]
+}
