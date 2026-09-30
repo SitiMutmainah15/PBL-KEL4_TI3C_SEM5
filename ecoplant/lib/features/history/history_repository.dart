@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../detection/detection.dart';
+import 'firebaseHistoryRepository.dart';
 
 abstract interface class HistoryRepository {
   Future<List<DetectionResult>> load();
@@ -19,7 +20,7 @@ class UnavailableHistoryRepository implements HistoryRepository {
 }
 
 final historyRepositoryProvider = Provider<HistoryRepository>(
-  (ref) => const UnavailableHistoryRepository(),
+  (ref) => FirebaseHistoryRepository(),
 );
 final historyProvider = FutureProvider<List<DetectionResult>>((ref) async {
   final items = await ref.watch(historyRepositoryProvider).load();
