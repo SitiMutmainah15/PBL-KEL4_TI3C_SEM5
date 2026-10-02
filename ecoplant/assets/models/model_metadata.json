@@ -1,0 +1,28 @@
+{
+  "version": "banana-cdcfe1205cd6",
+  "input_shape": [
+    1,
+    224,
+    224,
+    3
+  ],
+  "input_dtype": "float32",
+  "pixel_range": [
+    0,
+    255
+  ],
+  "resize": "nearest_floor",
+  "color": "RGB",
+  "normalization": "inside_model",
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "tensorflow_version": "2.21.0",
+  "test_metrics": {
+    "accuracy": 0.8501872420310974,
+    "loss": 0.34164926409721375
+  }
+}

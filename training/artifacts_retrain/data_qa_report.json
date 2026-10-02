@@ -1,0 +1,265 @@
+{
+  "class_counts_raw": {
+    "cordana": 262,
+    "healthy": 236,
+    "pestalotiopsis": 290,
+    "sigatoka": 573
+  },
+  "source_counts": {
+    "Banana_Leaf_Disease_Dataset_Bangladesh": {
+      "cordana": 100,
+      "healthy": 107,
+      "pestalotiopsis": 117,
+      "sigatoka": 100
+    },
+    ".": {
+      "cordana": 162,
+      "healthy": 129,
+      "pestalotiopsis": 173,
+      "sigatoka": 473
+    }
+  },
+  "label_conflicts_excluded": {
+    "f32bf8dfffe937734d3789435ef3aaec38b6fcf221c01ff1269478a7d7b06eee": [
+      [
+        "healthy",
+        "healthy/122.jpeg"
+      ],
+      [
+        "pestalotiopsis",
+        "pestalotiopsis/78.jpeg"
+      ]
+    ]
+  },
+  "total_valid_after_dedup": 1321,
+  "corrupt_files": [],
+  "bad_extension_files": [],
+  "duplicate_groups": {
+    "13ff8f2f698412201660ae86f0f67d30315e4f3fbf7534288847cd6f40d6890b": [
+      "healthy/0.jpeg",
+      "healthy/104.jpeg"
+    ],
+    "2f9b3509e04a4a834be11521e0be7682a9f9db8a9f5ed393de88332c0218bd1b": [
+      "healthy/1.jpeg",
+      "healthy/109.jpeg"
+    ],
+    "6e47abee56a2c6d7756436b905bb352fe5d68b4cccaf4df7f1479a7882182251": [
+      "healthy/10.jpeg",
+      "healthy/106.jpeg"
+    ],
+    "9b1ce9a0a6536e63fa5e2f025e67281a5da093a6468b1fb4bb80247b39fde262": [
+      "healthy/101.jpeg",
+      "healthy/46.jpeg"
+    ],
+    "c5cd4acf5c44f4bb5becfbbdeb58651ed7b93d7dfdcef151d1c9aabb738efbbb": [
+      "healthy/102.jpeg",
+      "healthy/39.jpeg"
+    ],
+    "7e73b0d2429ead43451563330ae28fb78d59dc75997387336f1e7966b5a0069b": [
+      "healthy/103.jpeg",
+      "healthy/110.jpeg"
+    ],
+    "f57969f3cbc99b8a6e539367f9d5e9aa1c9df1f06d281155c115cc258043fa02": [
+      "healthy/105.jpeg",
+      "healthy/11.jpeg"
+    ],
+    "6199a890d1e018e08e44b91e2e9a2d75375961ce1c982d8d81665e7c030d0457": [
+      "healthy/107.jpeg",
+      "healthy/14.jpeg"
+    ],
+    "288ea806d84fa523d20922ce909f5bad4259d80403666c5e7b9376fa407c88e8": [
+      "healthy/108.jpeg",
+      "healthy/16.jpeg"
+    ],
+    "e573322a91d6f1d9657634e7fbca95a0f06dd88a443a217bef1ef869a436b3d5": [
+      "healthy/111.jpeg",
+      "healthy/18.jpeg"
+    ],
+    "72cab71becf7b20e03548cf750c0130ea457a798601983ac1d9c5ce24b3954f7": [
+      "healthy/112.jpeg",
+      "healthy/62.jpeg"
+    ],
+    "15a6dbdf9ce123f1db1d43d85cd0e3356637f9656216d8758a7cde1db9b57dbb": [
+      "healthy/12.jpeg",
+      "healthy/45.jpeg"
+    ],
+    "f32bf8dfffe937734d3789435ef3aaec38b6fcf221c01ff1269478a7d7b06eee": [
+      "healthy/122.jpeg",
+      "pestalotiopsis/78.jpeg"
+    ],
+    "48a37914ef11425e675e2484ba64027d461e8da4b4a881f8e0c718ace260b2e0": [
+      "healthy/123.jpeg",
+      "healthy/4.jpeg"
+    ],
+    "13230de68fb27e4b974a91a00d0f28e4bf6f1a04f0103d2dc296675667294a14": [
+      "healthy/124.jpeg",
+      "healthy/30.jpeg"
+    ],
+    "645f13c8b316b74e92fb484270b8e98eb8e7e90c556fef86d4af5cd30043f445": [
+      "healthy/125.jpeg",
+      "healthy/31.jpeg"
+    ],
+    "92e2178a12b846499a7dfe541b1cf7a1dba4b07576361e07ec5552394de6cfd5": [
+      "healthy/126.jpeg",
+      "healthy/24.jpeg"
+    ],
+    "b3a1626d34f27ead61a588d202adce8783bf5526899d325cbd1c368c8537d1b2": [
+      "healthy/127.jpeg",
+      "healthy/22.jpeg"
+    ],
+    "10f1c2769f0ac1e28dc0103f970741485a6e67bac43af56db31e31b2f6ee0389": [
+      "healthy/128.jpeg",
+      "healthy/21.jpeg"
+    ],
+    "cfd145033118eace6ddf36d96b12484234368333ecf39e9be89289181b1df0c3": [
+      "healthy/13.jpeg",
+      "healthy/43.jpeg"
+    ],
+    "460e7770fe19a9d5721f04715dcf2efa62c8231c27b4d62d6af611df312426f3": [
+      "healthy/15.jpeg",
+      "healthy/44.jpeg"
+    ],
+    "681de60886ba8a951c65c025f7e04213810782796dc7f97797688a2705d5dc41": [
+      "healthy/17.jpeg",
+      "healthy/63.jpeg"
+    ],
+    "6802f62238299f58a38d6efa8db43c1bb33be06c8c8084a1bc5e4096999feaa0": [
+      "healthy/19.jpeg",
+      "healthy/58.jpeg"
+    ],
+    "b67ab8c2c49276d18be0afefe0609d70cb6b91497ca92cc7b4ff0a76c103859a": [
+      "healthy/2.jpeg",
+      "healthy/34.jpeg"
+    ],
+    "156aca535e499ae1ddca26271913b3f44a443ae849e3ab6c160c3490b57551f4": [
+      "healthy/20.jpeg",
+      "healthy/59.jpeg"
+    ],
+    "865e22d984875c32cc8f7902a366d997cfa5235485990758c11e884a66b1f376": [
+      "healthy/23.jpeg",
+      "healthy/54.jpeg"
+    ],
+    "ae59deaf6cb451f7d1a508cacfb95c009554b50871668e92e51d7c6cbef4dd0e": [
+      "healthy/25.jpeg",
+      "healthy/55.jpeg"
+    ],
+    "d7e3205eef60b0f3c05eda2276995cb5a585548a97309e15e6932f9b6ef45324": [
+      "healthy/26.jpeg",
+      "healthy/56.jpeg"
+    ],
+    "e3c9a6ff77a746b72a5e9ee7fec487d4fed1dbd45ca1b3fe92a674d0b0f218be": [
+      "healthy/27.jpeg",
+      "healthy/57.jpeg"
+    ],
+    "e53c0a54495b6b0f4d911431b003a6fb39172e5744c09bf8b48ec7930bb86c1a": [
+      "healthy/29.jpeg",
+      "healthy/51.jpeg"
+    ],
+    "50205f64283bab3b38e05d26716737710bbc05bac9a176c23499c97845c70604": [
+      "healthy/3.jpeg",
+      "healthy/92.jpeg"
+    ],
+    "6de1bc11f0346e7ff86baf4a7dc2d1c81f05044c54965928e4fc7c205663a276": [
+      "healthy/32.jpeg",
+      "healthy/38.jpeg"
+    ],
+    "f391c1d661d851908b24f5817289edd6976a8f3ed62e7fc0a41270a51f300ddc": [
+      "healthy/33.jpeg",
+      "healthy/36.jpeg"
+    ],
+    "e7b1135be93b6f58dded730f9a91631d5d6f31c847b0b9ca8b410cabc7b662ff": [
+      "healthy/40.jpeg",
+      "healthy/7.jpeg"
+    ],
+    "77faa4838cb8cc389a5269e6de68836ac19c8ed0d3374b73bb3459f208a0c687": [
+      "healthy/41.jpeg",
+      "healthy/8.jpeg"
+    ],
+    "642e9297f979c00a1da928a41a85c1cfcb5ac8497f9596b352e6cc92047706da": [
+      "healthy/42.jpeg",
+      "healthy/6.jpeg"
+    ],
+    "97f30f17c15cd28242a7786f3f9331ce167f6bf26ef10cdab944876742cd1c97": [
+      "healthy/47.jpeg",
+      "healthy/9.jpeg"
+    ],
+    "f3760ef637fb36939e74fab48a2ccc4bc99127c2feff6d13578a86f8af7739ba": [
+      "healthy/48.jpeg",
+      "healthy/89.jpeg"
+    ],
+    "aa39ad0946164f0c6c074b9928bda3661694f8318e2634e22e46459c260f792b": [
+      "healthy/49.jpeg",
+      "healthy/5.jpeg"
+    ]
+  },
+  "removed_duplicates": [
+    "healthy/104.jpeg",
+    "healthy/109.jpeg",
+    "healthy/106.jpeg",
+    "healthy/46.jpeg",
+    "healthy/39.jpeg",
+    "healthy/110.jpeg",
+    "healthy/11.jpeg",
+    "healthy/14.jpeg",
+    "healthy/16.jpeg",
+    "healthy/18.jpeg",
+    "healthy/62.jpeg",
+    "healthy/45.jpeg",
+    "healthy/4.jpeg",
+    "healthy/30.jpeg",
+    "healthy/31.jpeg",
+    "healthy/24.jpeg",
+    "healthy/22.jpeg",
+    "healthy/21.jpeg",
+    "healthy/43.jpeg",
+    "healthy/44.jpeg",
+    "healthy/63.jpeg",
+    "healthy/58.jpeg",
+    "healthy/34.jpeg",
+    "healthy/59.jpeg",
+    "healthy/54.jpeg",
+    "healthy/55.jpeg",
+    "healthy/56.jpeg",
+    "healthy/57.jpeg",
+    "healthy/51.jpeg",
+    "healthy/92.jpeg",
+    "healthy/38.jpeg",
+    "healthy/36.jpeg",
+    "healthy/7.jpeg",
+    "healthy/8.jpeg",
+    "healthy/6.jpeg",
+    "healthy/9.jpeg",
+    "healthy/89.jpeg",
+    "healthy/5.jpeg"
+  ],
+  "split_summary": [
+    {
+      "class": "cordana",
+      "total": 262,
+      "train": 153,
+      "val": 56,
+      "test": 53
+    },
+    {
+      "class": "healthy",
+      "total": 197,
+      "train": 117,
+      "val": 40,
+      "test": 40
+    },
+    {
+      "class": "pestalotiopsis",
+      "total": 289,
+      "train": 168,
+      "val": 62,
+      "test": 59
+    },
+    {
+      "class": "sigatoka",
+      "total": 573,
+      "train": 341,
+      "val": 117,
+      "test": 115
+    }
+  ]
+}

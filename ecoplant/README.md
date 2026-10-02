@@ -1,17 +1,27 @@
-# ecoplant
+# EcoPlant AI
 
-A new Flutter project.
+Aplikasi Flutter Android untuk identifikasi awal kondisi daun pisang.
+Tahap saat ini: UI dan inisialisasi Firebase Core.
+Analisis TFLite serta sinkronisasi Cloud Firestore/Storage belum dihubungkan; tidak ada prediksi
+atau riwayat palsu pada aplikasi.
 
-## Getting Started
+```powershell
+flutter pub get
+flutter run -d <android-device-id>
+```
 
-This project is a starting point for a Flutter application.
+Verifikasi:
 
-A few resources to get you started if this is your first Flutter project:
+```powershell
+dart format .
+flutter analyze --no-pub
+flutter test --no-pub
+flutter build apk --debug --no-pub
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+APK debug: `build/app/outputs/flutter-apk/app-debug.apk`.
+Target minimum Android API 24, mengikuti plugin kamera/galeri.
+Font memakai fallback sans-serif Android (Roboto).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Lihat [IMPLEMENTATION.md](IMPLEMENTATION.md) untuk cakupan, keputusan desain,
+hasil pengujian, batasan, dan kebutuhan tahap integrasi berikutnya.
