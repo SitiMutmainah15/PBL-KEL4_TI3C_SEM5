@@ -27,9 +27,15 @@ class HistoryScreen extends StatelessWidget {
 }
 
 class HistoryContent extends ConsumerWidget {
-  const HistoryContent({super.key, required this.onScan, this.limit});
+  const HistoryContent({
+    super.key,
+    required this.onScan,
+    this.limit,
+    this.compact = false,
+  });
   final VoidCallback onScan;
   final int? limit;
+  final bool compact;
   @override
   Widget build(BuildContext context, WidgetRef ref) => ref
       .watch(historyProvider)
@@ -98,45 +104,90 @@ class HistoryContent extends ConsumerWidget {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(compact ? 10 : 16),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              width: 56,
+                              width: compact ? 44 : 56,
                               child: LeafPhoto(
                                 path: item.imagePath,
-                                height: 56,
+                                height: compact ? 44 : 56,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            SizedBox(width: compact ? 10 : 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     item.predictedClass.label,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium,
+                                    style: compact
+                                        ? const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          )
+                                        : Theme.of(
+                                            context,
+                                          ).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 4),
-                                  Text('Confidence ${item.confidenceLabel}'),
+                                  Text(
+                                    'Confidence ${item.confidenceLabel}',
+                                    style: compact
+                                        ? const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.ink600,
+                                          )
+                                        : null,
+                                  ),
                                   const SizedBox(height: 4),
                                   Text(
                                     displayDate(item.createdAt),
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: AppColors.ink600,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(
-                              Icons.chevron_right,
-                              color: AppColors.forest900,
-                            ),
+                            if (compact)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        item.predictedClass == LeafClass.healthy
+                                        ? const Color(0xFFC9EDC8)
+                                        : const Color(0xFFFFDCDC),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    item.predictedClass == LeafClass.healthy
+                                        ? 'Sehat'
+                                        : 'Perlu Perhatian',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          item.predictedClass ==
+                                              LeafClass.healthy
+                                          ? AppColors.forest700
+                                          : AppColors.error,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              const Icon(
+                                Icons.chevron_right,
+                                color: AppColors.forest900,
+                              ),
                           ],
                         ),
                       ),
