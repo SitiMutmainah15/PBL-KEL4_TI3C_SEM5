@@ -68,6 +68,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/models/
+    - assets/icons/LOGO.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -102,6 +103,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/icons/Logo.png"
+  image_path: "assets/icons/LOGO.png"
   adaptive_icon_background: "#D8E3B7"
-  adaptive_icon_foreground: "assets/icons/Logo.png"
+  adaptive_icon_foreground: "assets/icons/LOGO.png"
