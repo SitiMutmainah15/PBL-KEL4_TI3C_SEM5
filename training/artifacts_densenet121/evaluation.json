@@ -1,0 +1,85 @@
+{
+  "model": "DenseNet121",
+  "dataset": "C:\\Users\\arysf\\Documents\\kuliah\\PBL\\Semester_5\\PBL-KEL4_TI3C_SEM5\\training\\dataset_retrain",
+  "epochs_requested": 20,
+  "epochs_completed": 20,
+  "batch_size": 16,
+  "seed": 42,
+  "metrics": {
+    "accuracy": 0.8614231944084167,
+    "loss": 0.36142510175704956
+  },
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "confusion_matrix": [
+    [
+      41,
+      0,
+      4,
+      8
+    ],
+    [
+      0,
+      40,
+      0,
+      0
+    ],
+    [
+      9,
+      0,
+      46,
+      4
+    ],
+    [
+      1,
+      0,
+      11,
+      103
+    ]
+  ],
+  "classification_report": {
+    "Cordana": {
+      "precision": 0.803921568627451,
+      "recall": 0.7735849056603774,
+      "f1-score": 0.7884615384615384,
+      "support": 53.0
+    },
+    "Healthy": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 40.0
+    },
+    "Pestalotiopsis": {
+      "precision": 0.7540983606557377,
+      "recall": 0.7796610169491526,
+      "f1-score": 0.7666666666666667,
+      "support": 59.0
+    },
+    "Sigatoka": {
+      "precision": 0.8956521739130435,
+      "recall": 0.8956521739130435,
+      "f1-score": 0.8956521739130435,
+      "support": 115.0
+    },
+    "accuracy": 0.8614232209737828,
+    "macro avg": {
+      "precision": 0.8634180257990581,
+      "recall": 0.8622245241306434,
+      "f1-score": 0.8626950947603121,
+      "support": 267.0
+    },
+    "weighted avg": {
+      "precision": 0.8617964285241326,
+      "recall": 0.8614232209737828,
+      "f1-score": 0.861504849707097,
+      "support": 267.0
+    }
+  },
+  "prediction_seconds_total": 12.831821100000525,
+  "prediction_seconds_per_image_approx": 0.04805925505618174
+}
