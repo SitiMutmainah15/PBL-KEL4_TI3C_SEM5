@@ -1,0 +1,86 @@
+{
+  "seed": 42,
+  "batch_size": 16,
+  "patience": 10,
+  "epochs_requested": 100,
+  "epochs_run": 42,
+  "stopped_early": true,
+  "budgets": [
+    20,
+    100
+  ],
+  "selection_metric": "val_loss",
+  "selected_budget": 100,
+  "results": [
+    {
+      "budget": 20,
+      "best_epoch": 16,
+      "val_loss": 0.2976122796535492,
+      "val_accuracy": 0.8872727155685425,
+      "test_loss": 0.34997230768203735,
+      "test_accuracy": 0.8689138293266296,
+      "confusion_matrix": [
+        [
+          41,
+          0,
+          4,
+          8
+        ],
+        [
+          0,
+          40,
+          0,
+          0
+        ],
+        [
+          4,
+          1,
+          53,
+          1
+        ],
+        [
+          1,
+          1,
+          15,
+          98
+        ]
+      ],
+      "checkpoint": "e20\\banana_best.keras"
+    },
+    {
+      "budget": 100,
+      "best_epoch": 32,
+      "val_loss": 0.28095120191574097,
+      "val_accuracy": 0.8727272748947144,
+      "test_loss": 0.33211570978164673,
+      "test_accuracy": 0.8764045238494873,
+      "confusion_matrix": [
+        [
+          41,
+          0,
+          3,
+          9
+        ],
+        [
+          0,
+          40,
+          0,
+          0
+        ],
+        [
+          4,
+          1,
+          53,
+          1
+        ],
+        [
+          1,
+          1,
+          13,
+          100
+        ]
+      ],
+      "checkpoint": "e100\\banana_best.keras"
+    }
+  ]
+}

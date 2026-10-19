@@ -87,7 +87,10 @@ void main() {
     tester,
   ) async {
     await start(tester);
-    expect(find.text('Kenali kondisi\ndaun pisang Anda.'), findsOneWidget);
+    expect(
+      find.text('Cek kesehatan\ndaun pisang\ndengan mudah.'),
+      findsOneWidget,
+    );
     await tapText(tester, 'Scan Daun');
     expect(find.text('Belum ada foto dipilih.'), findsOneWidget);
     expect(find.text('Analisis'), findsNothing);
@@ -110,7 +113,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [historyRepositoryProvider.overrideWithValue(repository)],
-        child: const EcoPlantApp(),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: appTheme(),
+          home: const AppShell(),
+        ),
       ),
     );
     await tester.pump();
@@ -232,7 +239,15 @@ void main() {
     final key = GlobalKey();
     await tester.pumpWidget(
       ProviderScope(
-        child: RepaintBoundary(key: key, child: const EcoPlantApp()),
+        overrides: [
+          historyRepositoryProvider.overrideWithValue(
+            TestHistory(items: [fixture()]),
+          ),
+        ],
+        child: RepaintBoundary(
+          key: key,
+          child: MaterialApp(theme: appTheme(), home: const AppShell()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
