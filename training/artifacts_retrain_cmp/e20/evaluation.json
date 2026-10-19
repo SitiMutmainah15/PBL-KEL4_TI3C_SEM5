@@ -1,0 +1,45 @@
+{
+  "budget": 20,
+  "best_epoch": 16,
+  "checkpoint": "e20\\banana_best.keras",
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "validation": {
+    "accuracy": 0.8872727155685425,
+    "loss": 0.2976122796535492
+  },
+  "test": {
+    "accuracy": 0.8689138293266296,
+    "loss": 0.34997230768203735
+  },
+  "confusion_matrix": [
+    [
+      41,
+      0,
+      4,
+      8
+    ],
+    [
+      0,
+      40,
+      0,
+      0
+    ],
+    [
+      4,
+      1,
+      53,
+      1
+    ],
+    [
+      1,
+      1,
+      15,
+      98
+    ]
+  ]
+}
