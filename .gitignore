@@ -1,0 +1,17 @@
+﻿# Rahasia lokal
+backend/.env
+.env
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

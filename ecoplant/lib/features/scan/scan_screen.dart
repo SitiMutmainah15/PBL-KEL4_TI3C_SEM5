@@ -127,10 +127,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             child: const Text('Batalkan Foto'),
           ),
         ],
-        const SizedBox(height: 20),
-        const Notice(
-          'Analisis belum tersedia pada versi pengembangan ini. Foto Anda tidak dikirim untuk analisis.',
-        ),
       ],
     );
   }

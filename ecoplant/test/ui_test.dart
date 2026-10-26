@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ecoplant/app.dart';
 import 'package:ecoplant/core/theme.dart';
 import 'package:ecoplant/features/detection/detection.dart';
+import 'package:ecoplant/features/detection/leaf_caption.dart';
 import 'package:ecoplant/features/detection/result_screen.dart';
 import 'package:ecoplant/features/history/history_repository.dart';
 import 'package:ecoplant/features/scan/scan_controller.dart';
@@ -67,6 +68,7 @@ void main() {
             repository ?? TestHistory(),
           ),
           galleryServiceProvider.overrideWithValue(TestGallery()),
+          captionServiceProvider.overrideWithValue(const TestCaptionService()),
         ],
         child: MaterialApp(
           theme: appTheme(),
@@ -112,7 +114,10 @@ void main() {
     final repository = TestHistory(pending: pending);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [historyRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          historyRepositoryProvider.overrideWithValue(repository),
+          captionServiceProvider.overrideWithValue(const TestCaptionService()),
+        ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: appTheme(),
@@ -145,7 +150,12 @@ void main() {
       final repository = TestHistory(failSave: true);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [historyRepositoryProvider.overrideWithValue(repository)],
+          overrides: [
+            historyRepositoryProvider.overrideWithValue(repository),
+            captionServiceProvider.overrideWithValue(
+              const TestCaptionService(),
+            ),
+          ],
           child: MaterialApp(
             theme: appTheme(),
             home: Builder(
@@ -194,6 +204,7 @@ void main() {
           galleryServiceProvider.overrideWithValue(gallery),
           imageValidatorProvider.overrideWithValue((_) async {}),
           detectionServiceProvider.overrideWithValue(TestDetection(pending)),
+          captionServiceProvider.overrideWithValue(const TestCaptionService()),
         ],
         child: const EcoPlantApp(),
       ),
