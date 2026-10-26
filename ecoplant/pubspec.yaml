@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^6.10.0
   tflite_flutter: ^0.12.1
   image: ^4.5.4
+  http: ^1.6.0
   
 
 dev_dependencies:
@@ -70,6 +71,10 @@ flutter:
     - assets/models/
     - assets/icons/LOGO.png
     - assets/images/banana_leaf.jpg
+    - assets/references/healthy/
+    - assets/references/sigatoka/
+    - assets/references/cordana/
+    - assets/references/pestalotiopsis/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

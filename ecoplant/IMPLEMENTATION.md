@@ -18,6 +18,30 @@ dan service stub tanpa prediksi palsu pada 24 September 2026.
   daftar dan menonaktifkan penyimpanan ulang pada layar yang sama.
 - Model version tersedia pada kontrak hasil; confidence divalidasi dalam 0..1.
 
+## Caption dari model bahasa
+
+Alamat backend ditentukan saat build. Bawaan `10.0.2.2` hanya berlaku di emulator,
+sedangkan HP fisik butuh IP LAN komputer. Pakai `scripts/run-device.ps1` agar
+alamat itu terisi otomatis. Tanpa itu, layar hasil berhenti di status memuat
+karena permintaan menunggu alamat yang tidak ada.
+
+Layar hasil kini mengambil teks pendamping dari layanan caption berbasis Groq
+(`backend/`) alih-alih teks statis di aplikasi.
+
+- Satu permintaan menghasilkan tiga bagian: ringkasan kondisi, penanganan awal,
+  dan saran memotret ulang. Model tidak diminta menghitung ulang confidence.
+- Prompt melarang diagnosis pasti, dosis, merek pestisida, dan em dash.
+- Bila label yang disebut model bahasa berbeda dari keluaran TFLite, layar
+  menampilkan catatan perbedaan dan tetap memakai label TFLite sebagai hasil utama.
+- Tiga foto pembanding per kelas diambil dari `training/dataset/test/` dan
+  dibundel sebagai aset. Ini pembanding tampilan, bukan hasil analisis foto pengguna.
+- Status muat, gagal, dan coba lagi tersedia. Setelah gagal, pengguna dapat memilih
+  menampilkan keterangan umum yang ditulis manusia (`baseline_condition.dart`),
+  bukan teks karangan model.
+- Permintaan yang sama tidak diulang selama sesi berjalan (cache di memori aplikasi);
+  backend juga menyimpan cache ber-hash untuk foto dan label yang identik.
+- Kunci Groq hanya ada di `backend/.env`. Aplikasi tidak pernah memegang kunci itu.
+
 ## Batas tahap ini
 
 Stub analisis dan riwayat sengaja mengembalikan kegagalan yang jelas. Tidak ada
@@ -53,8 +77,9 @@ gradient, glow, glass, dekorasi sparkle, atau animasi dekoratif.
 
 ## Verifikasi
 
-Hasil terakhir: format lulus, analyzer tanpa temuan, 15 tes lulus, dan APK debug
-berhasil dibangun. Diff diperiksa tanpa error whitespace.
+Hasil terakhir: format lulus, analyzer tanpa temuan selain info nama berkas lama,
+26 tes Flutter dan 11 tes backend lulus. Uji live ke Groq dan endpoint caption
+dijalankan pada lingkungan ini.
 
 Jalankan dari folder `ecoplant`:
 
@@ -63,6 +88,12 @@ dart format .
 flutter analyze --no-pub
 flutter test --no-pub
 flutter build apk --debug --no-pub
+```
+
+Jalankan dari folder `backend`:
+
+```powershell
+..\.venv\Scripts\python.exe -m pytest
 ```
 
 Tes menggunakan fixture sintetis yang hanya ada dalam folder `test/`:
@@ -77,7 +108,14 @@ Tes menggunakan fixture sintetis yang hanya ada dalam folder `test/`:
 - Gagal simpan mempertahankan hasil; retry berhasil; tombol menjadi Tersimpan.
 - Layar mobile diuji pada 320, 390, dan 480 px dengan skala teks 200%.
 - Tab/Enter mengaktifkan aksi utama.
-- Capture widget untuk tinjauan visual disimpan di `build/review/home.png`.
+- Caption: status muat, teks lengkap, foto pembanding, dan kartu saran foto.
+- Caption gagal menampilkan pesan dan Coba Lagi yang memanggil ulang layanan.
+- Keterangan umum hanya muncul setelah pengguna memilihnya.
+- Foto yang dinilai sulit dibaca memakai judul kartu yang berbeda.
+- Permintaan caption yang sama dipakai ulang; invalidasi memaksa permintaan baru.
+- Setiap kelas punya tiga foto pembanding dan JSON caption wajib lengkap.
+- Setiap berkas foto pembanding benar-benar terbaca dari bundel aset.
+- Capture widget untuk tinjauan visual disimpan di `build/review/`.
 
 Perhitungan kontras WCAG: putih/forest700 4.97:1; putih/forest900 9.93:1;
 ink600/canvas 4.86:1; ink900/cream 14.16:1; forest900/cream 8.91:1;
@@ -93,6 +131,7 @@ diuji. Belum ada uji kamera/izin/lifecycle pada perangkat Android fisik.
 - [Riverpod](https://pub.dev/packages/flutter_riverpod): state dan dependency overrides.
 - [camera](https://pub.dev/packages/camera): preview/capture native, izin dan lifecycle.
 - [image_picker](https://pub.dev/packages/image_picker): galeri dan recovery Android.
+- [http](https://pub.dev/packages/http): unggah multipart foto ke layanan caption.
 
 Versi terkunci pada `pubspec.lock`, sesuai SDK proyek. File registrasi plugin
 platform lain diperbarui otomatis oleh Flutter, bukan pengembangan fitur desktop/web.

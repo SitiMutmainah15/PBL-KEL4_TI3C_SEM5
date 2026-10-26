@@ -33,6 +33,12 @@ Arsitektur EcoPlant AI harus:
 - Status implementasi: repository riwayat masih stub; konfigurasi dan integrasi
   Firebase belum tersedia di aplikasi.
 
+### Caption Service
+- Python + FastAPI (`backend/`), dipanggil lewat HTTP multipart.
+- Groq API dengan model visi `qwen/qwen3.8-27b` sebagai penyusun teks pendamping.
+- Kunci Groq hanya hidup di `backend/.env`; aplikasi tidak memegang kunci itu.
+- Caption bukan hasil analisis utama. Label dan skor tetap berasal dari TFLite.
+
 ### ML Development
 - Python
 - TensorFlow / Keras
@@ -69,7 +75,21 @@ Arsitektur EcoPlant AI harus:
 ┌───────────────▼──────────┐
 │ model.tflite + labels    │
 └──────────────────────────┘
+
+┌───────────────────────────────────────────────┐
+│         Caption Service (backend/)            │
+│ FastAPI | validasi gambar | cache ber-hash    │
+└───────────────────────┬───────────────────────┘
+                        │ HTTPS
+┌───────────────────────▼───────────────────────┐
+│           Groq API (model visi)               │
+│ ringkasan | penanganan | saran foto           │
+└───────────────────────────────────────────────┘
 ```
+
+Teks pendamping pada layar hasil datang dari Caption Service. Bila layanan itu tidak
+tersedia, layar tetap menampilkan hasil TFLite dan menawarkan keterangan umum yang
+ditulis manusia. Foto pembanding per kelas dibundel sebagai aset dari split uji dataset.
 
 ---
 

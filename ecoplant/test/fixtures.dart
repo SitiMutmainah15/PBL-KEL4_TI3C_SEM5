@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:ecoplant/features/detection/detection.dart';
+import 'package:ecoplant/features/detection/leaf_caption.dart';
 import 'package:ecoplant/features/history/history_repository.dart';
 import 'package:ecoplant/features/scan/scan_controller.dart';
 
@@ -66,4 +67,22 @@ class TestDetection implements DetectionService {
     calls++;
     return completer.future;
   }
+}
+
+/// Caption statis untuk tes UI. Tidak memanggil jaringan.
+class TestCaptionService implements CaptionService {
+  const TestCaptionService();
+
+  static const caption = LeafCaption(
+    summary: 'Ringkasan kondisi daun dari layanan caption.',
+    treatment: 'Penanganan awal dari layanan caption.',
+    photoTip: 'Saran memotret ulang dari layanan caption.',
+    imageMatches: true,
+  );
+
+  @override
+  Future<LeafCaption> describe({
+    required DetectionResult result,
+    required String locale,
+  }) async => caption;
 }
