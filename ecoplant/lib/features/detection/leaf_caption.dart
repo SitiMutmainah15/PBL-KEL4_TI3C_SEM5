@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import 'detection.dart';
+import 'groq_caption_service.dart';
 
 /// Alamat backend caption. Ubah lewat
 /// `--dart-define=ECOPLANT_API_BASE_URL=http://host:8080`.
@@ -150,8 +151,10 @@ class HttpCaptionService implements CaptionService {
   }
 }
 
+/// Bila build menyertakan GROQ_API_KEY, aplikasi memanggil Groq langsung.
+/// Tanpa kunci itu, aplikasi kembali memakai backend di `backend/`.
 final captionServiceProvider = Provider<CaptionService>(
-  (ref) => HttpCaptionService(),
+  (ref) => groqApiKey.isNotEmpty ? GroqCaptionService() : HttpCaptionService(),
 );
 
 /// Menyimpan permintaan caption per hasil supaya membuka layar yang sama
