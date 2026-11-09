@@ -9,8 +9,6 @@ import 'package:image/image.dart' as img;
 import 'detection.dart';
 import 'leaf_caption.dart';
 
-/// Kunci Groq disuntikkan saat build lewat
-/// `--dart-define=GROQ_API_KEY=gsk_...`, tidak ditulis di kode sumber.
 const groqApiKey = String.fromEnvironment('GROQ_API_KEY');
 const groqModel = String.fromEnvironment(
   'GROQ_MODEL',
@@ -20,8 +18,8 @@ const _groqEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
 
 const _leafClasses = ['healthy', 'sigatoka', 'cordana', 'pestalotiopsis'];
 
-// Prompt dan skema disalin dari backend/app/groq_client.py supaya jawaban
-// tetap sama dengan versi server.
+// Aturan isi teks untuk model bahasa. Skema JSON di bawah memaksa model
+// selalu mengembalikan kelima field yang dibaca LeafCaption.fromJson.
 const _systemPrompt =
     'Anda asisten penyuluh pertanian untuk aplikasi EcoPlant yang membantu pengguna '
     'memeriksa daun pisang. Model klasifikasi di perangkat sudah memberi satu label dan skor. Tugas Anda '
@@ -94,15 +92,14 @@ String _userPrompt(String label, double confidence, String locale) {
       'misalnya arah cahaya, jarak, sudut, atau bagian daun yang perlu masuk bingkai.';
 }
 
-/// Perkecil ke sisi terpanjang 1024 px dan simpan ulang sebagai JPEG,
-/// sama seperti `prepare()` di backend. Dijalankan di isolate terpisah.
+/// Perkecil ke sisi terpanjang 1024 px dan simpan ulang sebagai JPEG supaya
+/// unggahan ke Groq tetap kecil. Dijalankan di isolate terpisah.
 Uint8List? _shrinkToJpeg(Uint8List bytes) {
   final decoded = img.decodeImage(bytes);
   if (decoded == null) return null;
   final oriented = img.bakeOrientation(decoded);
   const maxEdge = 1024;
-  final resized =
-      oriented.width >= oriented.height && oriented.width > maxEdge
+  final resized = oriented.width >= oriented.height && oriented.width > maxEdge
       ? img.copyResize(oriented, width: maxEdge)
       : oriented.height > maxEdge
       ? img.copyResize(oriented, height: maxEdge)
@@ -110,7 +107,7 @@ Uint8List? _shrinkToJpeg(Uint8List bytes) {
   return img.encodeJpg(resized, quality: 85);
 }
 
-/// Memanggil Groq langsung dari perangkat, tanpa backend perantara.
+/// Memanggil Groq langsung dari perangkat.
 class GroqCaptionService implements CaptionService {
   GroqCaptionService({http.Client? client, String? apiKey, String? model})
     : _client = client ?? http.Client(),
@@ -130,8 +127,8 @@ class GroqCaptionService implements CaptionService {
   }) async {
     if (_apiKey.isEmpty) {
       throw const ServiceFailure(
-        'Kunci Groq belum dipasang di aplikasi. Build ulang dengan '
-        '--dart-define=GROQ_API_KEY=...',
+        'Kunci Groq belum dipasang di aplikasi. Build ulang lewat '
+        'scripts/run-direct.ps1 setelah mengisi GROQ_API_KEY di .env.',
       );
     }
 
@@ -217,7 +214,9 @@ class GroqCaptionService implements CaptionService {
         );
       default:
         debugPrint('Groq ${response.statusCode}: ${response.body}');
-        throw const ServiceFailure('Model gagal membuat keterangan. Coba lagi.');
+        throw const ServiceFailure(
+          'Model gagal membuat keterangan. Coba lagi.',
+        );
     }
 
     final caption = LeafCaption.fromJson(_extractJson(response.body, label));

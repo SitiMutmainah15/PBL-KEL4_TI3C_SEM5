@@ -34,9 +34,9 @@ Arsitektur EcoPlant AI harus:
   Firebase belum tersedia di aplikasi.
 
 ### Caption Service
-- Python + FastAPI (`backend/`), dipanggil lewat HTTP multipart.
+- Aplikasi Flutter memanggil Groq API langsung (`GroqCaptionService`), tanpa backend perantara.
 - Groq API dengan model visi `qwen/qwen3.8-27b` sebagai penyusun teks pendamping.
-- Kunci Groq hanya hidup di `backend/.env`; aplikasi tidak memegang kunci itu.
+- Kunci Groq disimpan di `.env` root proyek dan disuntikkan saat build lewat `--dart-define` oleh `scripts/run-direct.ps1`. Kunci ikut tertanam di APK, jadi APK tidak dibagikan secara publik.
 - Caption bukan hasil analisis utama. Label dan skor tetap berasal dari TFLite.
 
 ### ML Development
@@ -77,8 +77,8 @@ Arsitektur EcoPlant AI harus:
 └──────────────────────────┘
 
 ┌───────────────────────────────────────────────┐
-│         Caption Service (backend/)            │
-│ FastAPI | validasi gambar | cache ber-hash    │
+│      GroqCaptionService (di aplikasi)         │
+│ perkecil foto | prompt | cache per hasil      │
 └───────────────────────┬───────────────────────┘
                         │ HTTPS
 ┌───────────────────────▼───────────────────────┐
@@ -87,7 +87,7 @@ Arsitektur EcoPlant AI harus:
 └───────────────────────────────────────────────┘
 ```
 
-Teks pendamping pada layar hasil datang dari Caption Service. Bila layanan itu tidak
+Teks pendamping pada layar hasil datang langsung dari Groq. Bila Groq tidak
 tersedia, layar tetap menampilkan hasil TFLite dan menawarkan keterangan umum yang
 ditulis manusia. Foto pembanding per kelas dibundel sebagai aset dari split uji dataset.
 

@@ -1,7 +1,7 @@
 # Membangun dan memasang APK yang memanggil Groq langsung dari HP,
 # tanpa backend dan tanpa laptop menyala setelah APK terpasang.
 #
-# Kunci dibaca dari backend/.env lalu disuntikkan lewat --dart-define,
+# Kunci dibaca dari .env di root proyek lalu disuntikkan lewat --dart-define,
 # jadi kunci tidak pernah ditulis di kode sumber atau di-commit.
 #
 # Pemakaian:
@@ -16,11 +16,11 @@ $ErrorActionPreference = "Stop"
 
 $root = Split-Path $PSScriptRoot -Parent
 $app = Join-Path $root "ecoplant"
-$envFile = Join-Path $root "backend\.env"
+$envFile = Join-Path $root ".env"
 $adb = Join-Path $env:LOCALAPPDATA "Android\Sdk\platform-tools\adb.exe"
 
 if (-not (Test-Path $envFile)) {
-  throw "backend\.env tidak ditemukan. Salin dari backend\.env.example lalu isi GROQ_API_KEY."
+  throw ".env tidak ditemukan di root proyek. Salin dari .env.example lalu isi GROQ_API_KEY."
 }
 
 $values = @{}
@@ -29,7 +29,7 @@ foreach ($line in Get-Content $envFile) {
 }
 
 $key = $values["GROQ_API_KEY"]
-if (-not $key) { throw "GROQ_API_KEY kosong di backend\.env." }
+if (-not $key) { throw "GROQ_API_KEY kosong di .env." }
 $model = if ($values["GROQ_MODEL"]) { $values["GROQ_MODEL"] } else { "qwen/qwen3.8-27b" }
 
 Write-Host "Mode: panggil Groq langsung ($model)"

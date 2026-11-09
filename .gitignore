@@ -1,5 +1,4 @@
-﻿# Rahasia lokal
-backend/.env
+# Rahasia lokal
 .env
 !.env.example
 

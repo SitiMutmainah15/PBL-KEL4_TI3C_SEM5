@@ -7,25 +7,19 @@ Backend Laravel telah dihapus dari repositori dan tidak digunakan lagi. Inferens
 
 Inisialisasi Firebase Core telah diterapkan pada aplikasi (`Firebase.initializeApp` dengan `firebase_options.dart` dan `google-services.json`). Layanan backend spesifik (seperti Cloud Firestore / Cloud Storage untuk riwayat deteksi) dan model TFLite saat ini masih dalam proses integrasi bertahap. Lihat [arsitektur](doc/architecture.md) untuk detail rencana sistem.
 
-Teks pendamping pada layar hasil (ringkasan kondisi, penanganan awal, dan saran memotret ulang) dibuat oleh model bahasa Groq. Kunci Groq tidak disimpan di aplikasi. Aplikasi mengirim foto, label, dan skor ke layanan `backend/` yang memegang kunci tersebut. Foto pembanding diambil dari split uji dataset latih, tiga contoh per kelas.
+Teks pendamping pada layar hasil (ringkasan kondisi, penanganan awal, dan saran memotret ulang) dibuat oleh model bahasa Groq. Aplikasi memanggil Groq langsung dari HP, jadi tidak ada backend yang perlu dijalankan. Foto pembanding diambil dari split uji dataset latih, tiga contoh per kelas.
 
-## Menjalankan Backend Caption
+## Menjalankan Aplikasi
 
 ```powershell
-cd backend
-..\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env   # lalu isi GROQ_API_KEY
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8080
+.\scripts\run-direct.ps1          # build debug, pasang ke HP, jalankan
+.\scripts\run-direct.ps1 -Release # build APK release
 ```
 
-Emulator Android menjangkau host lewat `http://10.0.2.2:8080`, yang sudah menjadi nilai bawaan. Untuk perangkat fisik, bangun aplikasi dengan
-`--dart-define=ECOPLANT_API_BASE_URL=http://<ip-komputer>:8080`. Rincian kontrak ada di [backend/README.md](backend/README.md).
+Skrip membaca `GROQ_API_KEY` dari `.env` di root proyek dan menyuntikkannya lewat `--dart-define`, jadi kunci tidak ditulis di kode sumber dan tidak di-commit. Setelah APK terpasang, HP cukup tersambung ke internet tanpa laptop menyala.
 
-Skrip `scripts/run-device.ps1` mengisi alamat itu otomatis dari IP LAN komputer, membangun APK, memasangnya ke HP yang tersambung, lalu menjalankan aplikasi:
-
-```powershell
-.\scripts\run-device.ps1
-```
+Kunci tetap tertanam di dalam APK dan bisa diambil oleh siapa pun yang membongkarnya. Bagikan APK hanya ke anggota kelompok atau penguji, jangan secara publik.
 
 ## Struktur Folder
 
@@ -34,12 +28,6 @@ Berikut struktur utama proyek. Folder dependensi, cache, hasil build, dan metada
 ```text
 PBL-KEL4_TI3C_SEM5/
 ├── .vscode/                    # Konfigurasi workspace VS Code
-├── backend/                    # Layanan caption Groq untuk aplikasi Flutter
-│   ├── app/                    # Kode FastAPI (config, Groq, validasi gambar)
-│   ├── tests/                  # Pengujian endpoint dan validasi unggahan
-│   ├── .env.example            # Contoh konfigurasi, kunci asli ada di .env
-│   ├── README.md               # Cara menjalankan dan kontrak endpoint
-│   └── requirements.txt        # Dependensi Python backend
 ├── doc/                        # Dokumentasi proyek
 │   └── architecture.md         # Dokumentasi arsitektur sistem
 ├── ecoplant/                   # Aplikasi Flutter EcoPlant
