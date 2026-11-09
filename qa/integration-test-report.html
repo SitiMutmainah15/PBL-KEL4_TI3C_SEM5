@@ -1,0 +1,104 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Laporan Integration Test EcoPlant</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1b2a17; font-size: 10.5pt; line-height: 1.45; }
+  h1 { font-size: 19pt; margin: 0 0 4px; color: #2f4a22; }
+  h2 { font-size: 11.5pt; margin: 18px 0 7px; color: #2f4a22; border-bottom: 1px solid #cfe0c4; padding-bottom: 3px; }
+  .sub { color: #5a6b52; font-size: 10pt; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 5px 7px; border-bottom: 1px solid #e3ebdc; vertical-align: top; }
+  tr { page-break-inside: avoid; }
+  h2 { page-break-after: avoid; }
+  th { background: #f1f7ec; font-weight: 600; }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: #f4f6f2; padding: 1px 4px; border-radius: 3px; }
+  pre { font-family: Consolas, monospace; font-size: 8.5pt; background: #f4f6f2; border: 1px solid #e3ebdc; padding: 9px; white-space: pre-wrap; line-height: 1.35; }
+  .badge { display: inline-block; background: #d9efd3; color: #2f4a22; font-weight: 600; font-size: 10pt; padding: 3px 10px; border-radius: 12px; }
+  .meta td:first-child { width: 145px; color: #5a6b52; }
+  .ok { color: #2f7a24; font-weight: 600; white-space: nowrap; }
+  .no { width: 26px; }
+  .avoid { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>Laporan Integration Test — EcoPlant AI</h1>
+<p class="sub">Flutter integration test pada perangkat Android fisik</p>
+<p><span class="badge">13 / 13 test lulus</span></p>
+
+<h2>Informasi Pengujian</h2>
+<table class="meta">
+  <tr><td>Tanggal</td><td>6 November 2026</td></tr>
+  <tr><td>Aplikasi</td><td>ecoplant (Flutter 3.41.9, Dart 3.11.5)</td></tr>
+  <tr><td>Perangkat</td><td>Samsung SM A146P — Android 15 (API 35), arm64</td></tr>
+  <tr><td>Jenis uji</td><td>Integration test (aplikasi berjalan di perangkat, bukan widget test)</td></tr>
+  <tr><td>Berkas uji</td><td><code>ecoplant/integration_test/app_test.dart</code></td></tr>
+  <tr><td>Perintah</td><td><code>flutter test integration_test/app_test.dart -d R9CW303CT9V</code></td></tr>
+  <tr><td>Durasi</td><td>Build 19,1 s &middot; install 4,0 s &middot; eksekusi 91 s</td></tr>
+  <tr><td>Hasil</td><td>All tests passed! (13 lulus, 0 gagal)</td></tr>
+</table>
+
+<h2>Hasil per Skenario</h2>
+<table>
+  <tr><th class="no">No</th><th>Skenario dan yang diverifikasi</th><th style="width:52px">Hasil</th></tr>
+  <tr><td>1</td><td><b>Splash ke beranda.</b> Teks "EcoPlant" tampil, setelah 3 detik aplikasi masuk ke beranda dan menampilkan keadaan riwayat kosong.</td><td class="ok">Lulus</td></tr>
+  <tr><td>2</td><td><b>Pilih foto, analisis, simpan riwayat.</b> "Scan Daun" membuka tab scan, "Pilih dari Galeri" memuat foto, "Analisis" membuka layar hasil (Sigatoka, confidence 92,0%), "Simpan Riwayat" menulis ke repositori.</td><td class="ok">Lulus</td></tr>
+  <tr><td>3</td><td><b>Riwayat dan detailnya.</b> Tab "Riwayat" menampilkan "Confidence 92.0%"; menekan item membuka layar "Detail Riwayat".</td><td class="ok">Lulus</td></tr>
+  <tr><td>4</td><td><b>Keterangan kondisi tampil.</b> Blok "Tentang kondisi ini", "Penanganan awal", "Foto pembanding", dan kartu "Saran foto berikutnya" muncul di layar hasil.</td><td class="ok">Lulus</td></tr>
+  <tr><td>5</td><td><b>Keterangan tidak diminta ulang.</b> Buka hasil, kembali, lalu analisis lagi: layanan tetap dipanggil satu kali (<code>CaptionCache</code> bekerja).</td><td class="ok">Lulus</td></tr>
+  <tr><td>6</td><td><b>Keterangan gagal.</b> Pesan kegagalan tampil, tombol "Tampilkan keterangan umum" menampilkan teks cadangan Sigatoka (kondisi dan penanganan).</td><td class="ok">Lulus</td></tr>
+  <tr><td>7</td><td><b>Coba lagi setelah gagal.</b> Kegagalan pertama tidak disimpan di cache; menekan "Coba Lagi" memanggil ulang layanan dan ringkasan berhasil tampil.</td><td class="ok">Lulus</td></tr>
+  <tr><td>8</td><td><b>Label model bahasa berbeda.</b> Label "Cordana" dari model bahasa pada hasil Sigatoka memunculkan penjelasan bahwa label model gambar tetap dipakai.</td><td class="ok">Lulus</td></tr>
+  <tr><td>9</td><td><b>Foto sulit dibaca.</b> Nilai <code>gambarSesuai: false</code> mengubah judul kartu menjadi "Foto ini sulit dibaca" dan menyembunyikan judul saran foto.</td><td class="ok">Lulus</td></tr>
+  <tr><td>10</td><td><b>Galeri gagal dibuka.</b> Pesan izin foto tampil, layar tetap pada keadaan awal, dan tombol "Buka Kamera" aktif kembali.</td><td class="ok">Lulus</td></tr>
+  <tr><td>11</td><td><b>Berkas bukan gambar.</b> Memilih berkas teks ditolak validator gambar asli dengan pesan format JPEG/PNG; foto tidak dipakai.</td><td class="ok">Lulus</td></tr>
+  <tr><td>12</td><td><b>Batalkan foto.</b> Setelah foto terpilih, "Batalkan Foto" mengembalikan layar ke "Mulai dari satu daun." dan "Belum ada foto dipilih."</td><td class="ok">Lulus</td></tr>
+  <tr><td>13</td><td><b>Scan ulang.</b> Dari layar hasil, "Scan Ulang" menutup layar dan mengosongkan pilihan foto sebelumnya.</td><td class="ok">Lulus</td></tr>
+</table>
+
+<h2>Cakupan dan Batasan</h2>
+<p>
+  Lapisan yang bergantung pada perangkat keras atau layanan eksternal diganti tiruan (fake) melalui override Riverpod,
+  sehingga alur antarmuka diuji deterministik tanpa kamera, galeri, model TFLite, Groq, maupun Firebase:
+</p>
+<table>
+  <tr><th style="width:200px">Provider</th><th>Pengganti saat uji</th></tr>
+  <tr><td><code>historyRepositoryProvider</code></td><td>Penyimpanan di memori</td></tr>
+  <tr><td><code>galleryServiceProvider</code></td><td>Path berkas buatan; satu kasus memakai galeri yang menolak dibuka</td></tr>
+  <tr><td><code>detectionServiceProvider</code></td><td>Hasil deteksi tetap (Sigatoka, 0,92)</td></tr>
+  <tr><td><code>captionServiceProvider</code></td><td>Teks tetap, dapat disetel gagal atau beda label</td></tr>
+</table>
+<p>
+  Yang diuji adalah navigasi dan perilaku layar, bukan akurasi model maupun koneksi Firebase/Groq.
+  Dua jalur sengaja tidak diuji: pembukaan kamera asli (memicu dialog izin native yang tidak deterministik)
+  dan panggilan Groq sungguhan. Validator gambar pada kasus 11 tetap memakai codec asli perangkat,
+  bukan tiruan.
+</p>
+
+<h2>Keluaran Konsol</h2>
+<pre>00:00 +0: loading C:/PBL-KEL4_TI3C_SEM5/ecoplant/integration_test/app_test.dart
+Running Gradle task 'assembleDebug'...                             19.1s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...           4.0s
+00:00 +0: (setUpAll)
+00:00 +0: 1. splash tampil lalu berpindah ke beranda
+00:09 +1: 2. pilih foto, analisis, lalu simpan ke riwayat
+00:16 +2: 3. riwayat menampilkan hasil tersimpan dan detailnya
+00:22 +3: 4. keterangan kondisi tampil di layar hasil
+00:29 +4: 5. keterangan tidak diminta ulang untuk hasil yang sama
+00:37 +5: 6. keterangan gagal menyediakan keterangan umum
+00:44 +6: 7. coba lagi memuat keterangan setelah gagal
+00:51 +7: 8. label model bahasa yang berbeda diberi penjelasan
+00:57 +8: 9. foto yang dinilai sulit dibaca memakai judul khusus
+01:04 +9: 10. galeri gagal dibuka menampilkan pesan izin
+01:10 +10: 11. berkas yang bukan gambar ditolak
+01:16 +11: 12. batalkan foto mengosongkan pilihan
+01:23 +12: 13. scan ulang mengosongkan hasil sebelumnya
+01:31 +13: (tearDownAll)
+01:32 +13: All tests passed!</pre>
+
+</body>
+</html>
