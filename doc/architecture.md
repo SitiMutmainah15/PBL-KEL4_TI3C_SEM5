@@ -22,8 +22,8 @@ Arsitektur EcoPlant AI harus:
 - Riverpod
 
 ### ML Runtime
-- TensorFlow Lite
-- `tflite_flutter`
+- Random Forest (scikit-learn) diekspor ke `forest.json`
+- Traversal pohon di Dart (`lib/features/detection/forest.dart`), tanpa runtime native
 
 ### Backend / Persistence
 - Firebase, sesuai keputusan pengguna pada 29 September 2026.
@@ -37,13 +37,13 @@ Arsitektur EcoPlant AI harus:
 - Aplikasi Flutter memanggil Groq API langsung (`GroqCaptionService`), tanpa backend perantara.
 - Groq API dengan model visi `qwen/qwen3.8-27b` sebagai penyusun teks pendamping.
 - Kunci Groq disimpan di `.env` root proyek dan disuntikkan saat build lewat `--dart-define` oleh `scripts/run-direct.ps1`. Kunci ikut tertanam di APK, jadi APK tidak dibagikan secara publik.
-- Caption bukan hasil analisis utama. Label dan skor tetap berasal dari TFLite.
+- Caption bukan hasil analisis utama. Label dan skor tetap berasal dari Random Forest.
 
 ### ML Development
 - Python
-- TensorFlow / Keras
-- MobileNetV2 transfer learning
-- Export `.tflite`
+- Python
+- scikit-learn (Random Forest, 200 pohon)
+- Export `forest.json` + `labels.json`
 
 ---
 
@@ -69,11 +69,11 @@ Arsitektur EcoPlant AI harus:
 ┌───────────────▼──────────┐  ┌─────▼───────────┐
 │      ML Data Source      │  │ Firebase Source │
 │ preprocessing            │  │ db / storage    │
-│ TFLite inference         │  │ repository      │
+│ forest.json traversal    │  │ repository      │
 └───────────────┬──────────┘  └─────────────────┘
                 │
 ┌───────────────▼──────────┐
-│ model.tflite + labels    │
+│ forest.json + labels     │
 └──────────────────────────┘
 
 ┌───────────────────────────────────────────────┐
@@ -88,7 +88,7 @@ Arsitektur EcoPlant AI harus:
 ```
 
 Teks pendamping pada layar hasil datang langsung dari Groq. Bila Groq tidak
-tersedia, layar tetap menampilkan hasil TFLite dan menawarkan keterangan umum yang
+tersedia, layar tetap menampilkan hasil Random Forest dan menawarkan keterangan umum yang
 ditulis manusia. Foto pembanding per kelas dibundel sebagai aset dari split uji dataset.
 
 ---
@@ -99,7 +99,7 @@ Gunakan **feature-first + layered separation**.
 
 Tidak perlu menerapkan clean architecture secara dogmatis dengan terlalu banyak abstraction. Prinsip utamanya:
 
-- UI tidak memanggil TensorFlow Lite langsung.
+- UI tidak menelusuri pohon Random Forest langsung.
 - UI tidak melakukan query Firebase langsung.
 - Repository/service tidak mengatur layout.
 - ML preprocessing berada di satu tempat.
@@ -155,8 +155,9 @@ lib/
 
 assets/
 ├── ml/
-│   ├── banana_leaf_model.tflite
-│   └── labels.json
+│   ├── forest.json
+│   ├── labels.json
+│   └── model_metadata.json
 ├── data/
 │   └── disease_info.json
 └── images/
@@ -173,15 +174,13 @@ Image Decode
       ↓
 Validate readable image
       ↓
-Resize / crop sesuai training
+Resize 64×64 nearest
       ↓
-Normalization sesuai training
+Ekstraksi 48 fitur histogram RGB 0–1
       ↓
-Tensor input
+Traversal 200 pohon (forest.json)
       ↓
-TFLite model
-      ↓
-Raw output
+Rata-rata probabilitas daun
       ↓
 Label mapping
       ↓
@@ -199,7 +198,8 @@ Result UI
 ML team dan Flutter team harus sepakat pada contract berikut.
 
 ### Model asset
-- `banana_leaf_model.tflite`
+- `forest.json` (pohon + threshold + probabilitas daun)
+- `model_metadata.json` (dokumentasi versi dan kontrak input)
 
 ### Labels
 `labels.json` contoh:
@@ -220,22 +220,23 @@ Dokumentasikan:
 - width,
 - height,
 - channels,
-- input dtype,
-- normalization formula.
+- rentang piksel,
+- cara ekstraksi fitur.
 
-Contoh yang umum untuk MobileNetV2:
-- 224×224 RGB,
-- float input,
-- normalization tertentu.
+Nilai yang dipakai sekarang (`model_metadata.json`):
+- 64×64 RGB, interpolasi nearest,
+- rentang 0–1 (`piksel / 255`),
+- histogram 16 bin per kanal dengan `density=True`,
+- 48 fitur, urutan R(16), G(16), B(16).
 
-Tetapi implementasi **tidak boleh mengasumsikan formula** sampai pipeline training final dikunci.
+Implementasi **tidak boleh mengasumsikan formula** lain sampai pipeline training final dikunci.
 
 ### Output contract
 Dokumentasikan:
-- output shape,
-- apakah output softmax atau logits,
+- panjang vektor probabilitas (= jumlah label),
+- probabilitas rata-rata 200 pohon, jumlah 1,
 - label order,
-- model version.
+- model version (`version` di `forest.json`).
 
 ---
 
@@ -245,12 +246,12 @@ Setiap model final harus memiliki metadata:
 
 ```text
 model_name: EcoPlant Banana Leaf Classifier
-model_version: 1.0.0
-architecture: MobileNetV2
+model_version: banana-rf-<hash>
+architecture: Random Forest (200 pohon, fitur histogram RGB)
 classes: 4
-input: 224x224 RGB
+input: 64x64 RGB, 48 fitur histogram
 trained_at: YYYY-MM-DD
-dataset: BananaLSD
+dataset: BananaLSD (split grup dataset_retrain)
 ```
 
 Jika model berubah:
@@ -367,7 +368,7 @@ data implementation → external SDK
 
 ### Forbidden
 - Widget → Firebase SDK langsung.
-- Widget → TFLite interpreter langsung.
+- Widget → service inferensi Random Forest langsung.
 - Result screen melakukan preprocessing.
 - History repository memanggil model ML.
 - Domain model bergantung pada widget/UI.
@@ -397,7 +398,7 @@ UI tidak perlu menampilkan stack trace.
 - memilih foto lokal,
 - mengambil foto,
 - preprocessing,
-- inference TFLite,
+- inference Random Forest,
 - menampilkan hasil dan disease info statis.
 
 ### May require network
@@ -505,7 +506,7 @@ Sebelum demo:
 
 Coding agent tidak boleh:
 - mengganti Riverpod tanpa keputusan tim,
-- mengganti TFLite dengan server inference,
+- mengganti Random Forest dengan server inference,
 - mengganti Firebase tanpa keputusan tim,
 - menambah backend baru,
 - mengubah class label model,

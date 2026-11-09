@@ -1,0 +1,26 @@
+{
+  "version": "banana-rf-0246c4b31fa9",
+  "features": 48,
+  "resize": [
+    64,
+    64
+  ],
+  "interpolation": "nearest",
+  "color": "RGB",
+  "normalization": "outside_model",
+  "pixel_range": [
+    0,
+    1
+  ],
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "n_estimators": 200,
+  "test_metrics": {
+    "accuracy": 0.7677902621722846
+  },
+  "sklearn_version": "1.9.1"
+}

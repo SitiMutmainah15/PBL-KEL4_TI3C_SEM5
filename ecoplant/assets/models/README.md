@@ -1,8 +1,10 @@
-Jalankan training/train_banana.ipynb sampai tahap penyalinan aset untuk menghasilkan:
+Jalankan `training/train_random_forest.py --copy-to ecoplant/assets/models` untuk menghasilkan:
 
-- model.tflite
-- labels.json
-- model_metadata.json
+- `forest.json`
+- `labels.json`
+- `model_metadata.json`
 
-Model harus menerima RGB float32 [1, 224, 224, 3] dalam rentang 0–255.
-Normalisasi berada di dalam model. Urutan output mengikuti labels.json.
+Model menerima 48 fitur: RGB 64×64 (interpolasi nearest), histogram 16 bin per kanal
+dengan `density=True`. Ekstraksi ada di `lib/features/detection/leaf_features.dart`
+dan harus tetap sama dengan `leaf_features()` di skrip training. Urutan output
+mengikuti `labels.json`.

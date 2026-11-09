@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'tflite_detection_service.dart';
+import 'random_forest_detection_service.dart';
 
 enum LeafClass {
   healthy('Healthy'),
@@ -52,7 +52,6 @@ class UnavailableDetectionService implements DetectionService {
   const UnavailableDetectionService();
   @override
   Future<DetectionResult> analyze(String imagePath) async {
-    // TODO: Connect TFLite after model, label order and training preprocessing are supplied.
     throw const ServiceFailure(
       'Analisis belum tersedia pada versi ini. Anda tetap dapat mengambil atau memilih foto.',
     );
@@ -60,7 +59,7 @@ class UnavailableDetectionService implements DetectionService {
 }
 
 final detectionServiceProvider = Provider<DetectionService>((ref) {
-  return TfliteDetectionService();
+  return RandomForestDetectionService();
 });
 const resultDisclaimer =
     'Hasil ini merupakan prediksi model berdasarkan citra daun, bukan diagnosis pasti. Konsultasikan dengan tenaga ahli jika gejala berlanjut.';

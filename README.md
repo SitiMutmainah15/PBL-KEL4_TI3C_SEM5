@@ -3,9 +3,9 @@
 ## Arsitektur yang Digunakan
 
 EcoPlant menggunakan Flutter dengan Firebase sebagai layanan backend dan penyimpanan data.
-Backend Laravel telah dihapus dari repositori dan tidak digunakan lagi. Inferensi model direncanakan berjalan langsung di perangkat (*on-device*) menggunakan TensorFlow Lite (TFLite).
+Backend Laravel telah dihapus dari repositori dan tidak digunakan lagi. Inferensi model berjalan langsung di perangkat (*on-device*) menggunakan Random Forest (scikit-learn) yang diekspor ke `forest.json`.
 
-Inisialisasi Firebase Core telah diterapkan pada aplikasi (`Firebase.initializeApp` dengan `firebase_options.dart` dan `google-services.json`). Layanan backend spesifik (seperti Cloud Firestore / Cloud Storage untuk riwayat deteksi) dan model TFLite saat ini masih dalam proses integrasi bertahap. Lihat [arsitektur](doc/architecture.md) untuk detail rencana sistem.
+Inisialisasi Firebase Core telah diterapkan pada aplikasi (`Firebase.initializeApp` dengan `firebase_options.dart` dan `google-services.json`). Layanan backend spesifik (seperti Cloud Firestore / Cloud Storage untuk riwayat deteksi) masih dalam proses integrasi bertahap. Lihat [arsitektur](doc/architecture.md) untuk detail rencana sistem.
 
 Teks pendamping pada layar hasil (ringkasan kondisi, penanganan awal, dan saran memotret ulang) dibuat oleh model bahasa Groq. Aplikasi memanggil Groq langsung dari HP, jadi tidak ada backend yang perlu dijalankan. Foto pembanding diambil dari split uji dataset latih, tiga contoh per kelas.
 
@@ -34,7 +34,7 @@ PBL-KEL4_TI3C_SEM5/
 │   ├── android/                # Proyek platform Android (konfigurasi Google Services & Gradle)
 │   ├── assets/                 # Folder aset aplikasi
 │   │   ├── images/             # Aset gambar aplikasi
-│   │   ├── models/             # Model TFLite, label, dan metadata
+│   │   ├── models/             # Model forest.json, label, dan metadata
 │   │   └── references/         # Foto pembanding per kelas dari dataset
 │   ├── ios/                    # Proyek platform iOS
 │   ├── lib/                    # Kode sumber Dart
@@ -59,19 +59,14 @@ PBL-KEL4_TI3C_SEM5/
 │   └── README.md               # Panduan aplikasi Flutter EcoPlant
 ├── qa/                         # Folder pemeriksaan kualitas
 ├── training/                   # Pelatihan model machine learning
-│   ├── artifacts/              # Artefak data (laporan QA & manifest split dataset)
-│   │   ├── data_qa_report.json # Laporan pemeriksaan integritas data & deduplikasi
-│   │   └── split_manifest.json # Daftar pembagian dataset per kelas & split
-│   ├── dataset/                # Dataset terbagi siap latih (split 60:20:20)
-│   │   ├── train/              # Data latih (cordana, healthy, pestalotiopsis, sigatoka)
-│   │   ├── val/                # Data validasi
-│   │   └── test/               # Data uji
+│   ├── artifacts_rf/           # Hasil training: forest.json, label, metadata, evaluasi
+│   ├── dataset_retrain/        # Dataset latih siap pakai (split grup 60:20:20)
 │   ├── OriginalSet/            # Dataset mentah asli BananaLSD
 │   │   ├── cordana/            # Kelas cordana
 │   │   ├── healthy/            # Kelas daun sehat
 │   │   ├── pestalotiopsis/     # Kelas pestalotiopsis
 │   │   └── sigatoka/           # Kelas sigatoka
-│   └── train_banana.ipynb      # Jupyter Notebook pelatihan model daun pisang
+│   └── train_random_forest.py  # Skrip pelatihan Random Forest + ekspor forest.json
 └── README.md                   # Dokumentasi utama proyek
 ```
 

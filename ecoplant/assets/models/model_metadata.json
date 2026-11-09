@@ -1,28 +1,26 @@
 {
-  "version": "banana-cdcfe1205cd6",
-  "input_shape": [
-    1,
-    224,
-    224,
-    3
+  "version": "banana-rf-0246c4b31fa9",
+  "features": 48,
+  "resize": [
+    64,
+    64
   ],
-  "input_dtype": "float32",
+  "interpolation": "nearest",
+  "color": "RGB",
+  "normalization": "outside_model",
   "pixel_range": [
     0,
-    255
+    1
   ],
-  "resize": "nearest_floor",
-  "color": "RGB",
-  "normalization": "inside_model",
   "labels": [
     "Cordana",
     "Healthy",
     "Pestalotiopsis",
     "Sigatoka"
   ],
-  "tensorflow_version": "2.21.0",
+  "n_estimators": 200,
   "test_metrics": {
-    "accuracy": 0.8501872420310974,
-    "loss": 0.34164926409721375
-  }
+    "accuracy": 0.7677902621722846
+  },
+  "sklearn_version": "1.9.1"
 }

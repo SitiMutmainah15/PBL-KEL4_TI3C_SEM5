@@ -22,7 +22,7 @@ class LeafCaption {
   /// `false` bila model bahasa menilai foto tidak layak dibaca.
   final bool imageMatches;
 
-  /// Nama kelas yang disebut model bahasa, bisa berbeda dari keluaran TFLite.
+  /// Nama kelas yang disebut model bahasa, bisa berbeda dari keluaran model.
   final String detectedLabel;
 
   static LeafCaption? fromJson(Object? raw) {
