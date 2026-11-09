@@ -71,14 +71,16 @@ class TestDetection implements DetectionService {
 
 /// Caption statis untuk tes UI. Tidak memanggil jaringan.
 class TestCaptionService implements CaptionService {
-  const TestCaptionService();
+  const TestCaptionService({this.caption = defaultCaption});
 
-  static const caption = LeafCaption(
+  static const defaultCaption = LeafCaption(
     summary: 'Ringkasan kondisi daun dari layanan caption.',
     treatment: 'Penanganan awal dari layanan caption.',
     photoTip: 'Saran memotret ulang dari layanan caption.',
     imageMatches: true,
   );
+
+  final LeafCaption caption;
 
   @override
   Future<LeafCaption> describe({

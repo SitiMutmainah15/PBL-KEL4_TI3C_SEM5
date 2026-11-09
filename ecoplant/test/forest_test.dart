@@ -40,7 +40,7 @@ void main() {
     final forest =
         jsonDecode(File('assets/models/forest.json').readAsStringSync())
             as Map<String, dynamic>;
-    final scores = predictForest(forest, List<double>.filled(48, 1.0));
+    final scores = predictForest(forest, List<double>.filled(featureSize, 1.0));
     expect(scores.length, 4);
     expect(scores.every((v) => v >= 0 && v <= 1), isTrue);
     expect(scores.reduce((a, b) => a + b), closeTo(1, 1e-6));

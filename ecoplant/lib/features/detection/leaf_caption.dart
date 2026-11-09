@@ -5,6 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'detection.dart';
 import 'groq_caption_service.dart';
 
+/// Apa yang terlihat pada foto menurut model bahasa. Hanya [notLeaf] yang
+/// membuat skor deteksi ditampilkan 0%.
+enum CaptionSubject {
+  bananaLeaf,
+  notLeaf,
+  unclear;
+
+  static CaptionSubject fromJson(Object? raw) => switch (raw) {
+    'daun_pisang' => CaptionSubject.bananaLeaf,
+    'bukan_daun' => CaptionSubject.notLeaf,
+    _ => CaptionSubject.unclear,
+  };
+}
+
 /// Teks pendamping hasil satu permintaan ke Groq.
 class LeafCaption {
   const LeafCaption({
@@ -13,11 +27,15 @@ class LeafCaption {
     required this.photoTip,
     required this.imageMatches,
     this.detectedLabel = '',
+    this.subject = CaptionSubject.unclear,
   });
 
   final String summary;
   final String treatment;
   final String photoTip;
+
+  /// `notLeaf` bila objek utama foto bukan daun pisang.
+  final CaptionSubject subject;
 
   /// `false` bila model bahasa menilai foto tidak layak dibaca.
   final bool imageMatches;
@@ -49,6 +67,7 @@ class LeafCaption {
       photoTip: photoTip,
       imageMatches: matches is bool ? matches : true,
       detectedLabel: label is String ? label.trim() : '',
+      subject: CaptionSubject.fromJson(raw['subjek']),
     );
   }
 }

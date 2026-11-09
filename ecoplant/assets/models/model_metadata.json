@@ -1,6 +1,6 @@
 {
-  "version": "banana-rf-0246c4b31fa9",
-  "features": 48,
+  "version": "banana-rf-81c683ad22b4",
+  "features": 64,
   "resize": [
     64,
     64
@@ -18,9 +18,16 @@
     "Pestalotiopsis",
     "Sigatoka"
   ],
-  "n_estimators": 200,
-  "test_metrics": {
-    "accuracy": 0.7677902621722846
+  "n_estimators": 413,
+  "hyperparameters": {
+    "randomforestclassifier__max_depth": 14,
+    "randomforestclassifier__min_samples_leaf": 1,
+    "randomforestclassifier__min_samples_split": 2,
+    "randomforestclassifier__n_estimators": 413
   },
-  "sklearn_version": "1.9.1"
+  "test_metrics": {
+    "accuracy": 0.8426966292134831,
+    "precision_macro": 0.8288443878477969,
+    "recall_macro": 0.8370707095285105
+  }
 }

@@ -60,6 +60,7 @@ PBL-KEL4_TI3C_SEM5/
 ├── qa/                         # Folder pemeriksaan kualitas
 ├── training/                   # Pelatihan model machine learning
 │   ├── artifacts_rf/           # Hasil training: forest.json, label, metadata, evaluasi
+│   ├── dataset/                # Split lama 60:20:20; sumber 12 foto pembanding aplikasi
 │   ├── dataset_retrain/        # Dataset latih siap pakai (split grup 60:20:20)
 │   ├── OriginalSet/            # Dataset mentah asli BananaLSD
 │   │   ├── cordana/            # Kelas cordana

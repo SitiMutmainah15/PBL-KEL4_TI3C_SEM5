@@ -1,6 +1,6 @@
 {
-  "version": "banana-rf-0246c4b31fa9",
-  "features": 48,
+  "version": "banana-rf-e81525b3b960",
+  "features": 64,
   "resize": [
     64,
     64
@@ -18,9 +18,9 @@
     "Pestalotiopsis",
     "Sigatoka"
   ],
-  "n_estimators": 200,
+  "n_estimators": 300,
   "test_metrics": {
-    "accuracy": 0.7677902621722846
+    "accuracy": 0.846441947565543
   },
   "sklearn_version": "1.9.1"
 }

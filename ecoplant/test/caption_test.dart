@@ -41,18 +41,45 @@ const sampleCaption = LeafCaption(
 
 Widget host(TestCaption service, {DetectionResult? result}) => ProviderScope(
   overrides: [captionServiceProvider.overrideWithValue(service)],
-  child: MaterialApp(
-    theme: appTheme(),
-    home: Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: CaptionSection(result: result ?? fixture()),
+  child: MaterialApp(theme: appTheme(), home: _Host(result: result ?? fixture())),
+);
+
+/// Menirukan ResultScreen: pemilik permintaan caption dan tombol coba lagi.
+class _Host extends ConsumerStatefulWidget {
+  const _Host({required this.result});
+
+  final DetectionResult result;
+
+  @override
+  ConsumerState<_Host> createState() => _HostState();
+}
+
+class _HostState extends ConsumerState<_Host> {
+  late Future<LeafCaption> _request = _load();
+
+  Future<LeafCaption> _load() => ref
+      .read(captionCacheProvider)
+      .load(widget.result, ref.read(captionServiceProvider));
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: CaptionSection(
+          result: widget.result,
+          request: _request,
+          onRetry: () {
+            ref.read(captionCacheProvider).invalidate(widget.result);
+            setState(() {
+              _request = _load();
+            });
+          },
         ),
       ),
     ),
-  ),
-);
+  );
+}
 
 void main() {
   testWidgets('caption loading then shows text, photos and tip', (
@@ -162,6 +189,25 @@ void main() {
         expect(await decodeImageFromList(data.buffer.asUint8List()), isNotNull);
       }
     }
+  });
+
+  test('caption json reads subject, defaulting to unclear', () {
+    Map<String, dynamic> raw(String? subject) => {
+      'ringkasan': 'A',
+      'penanganan': 'B',
+      'saranFoto': 'C',
+      'gambarSesuai': false,
+      'subjek': ?subject,
+    };
+
+    expect(
+      LeafCaption.fromJson(raw('daun_pisang'))?.subject,
+      CaptionSubject.bananaLeaf,
+    );
+    expect(LeafCaption.fromJson(raw('bukan_daun'))?.subject, CaptionSubject.notLeaf);
+    expect(LeafCaption.fromJson(raw('tidak_jelas'))?.subject, CaptionSubject.unclear);
+    expect(LeafCaption.fromJson(raw(null))?.subject, CaptionSubject.unclear);
+    expect(LeafCaption.fromJson(raw('entah'))?.subject, CaptionSubject.unclear);
   });
 
   test('caption json requires all three texts', () {

@@ -29,6 +29,10 @@ alih-alih teks statis di aplikasi.
 
 - Satu permintaan menghasilkan tiga bagian: ringkasan kondisi, penanganan awal,
   dan saran memotret ulang. Model tidak diminta menghitung ulang confidence.
+- Permintaan yang sama juga menilai isi foto (`subjek`: daun pisang, bukan daun,
+  atau tidak jelas). Bila objeknya bukan daun pisang, layar hasil menampilkan
+  "Bukan daun pisang" dengan skor 0% dan menyembunyikan tombol simpan. Bila
+  penilaian gagal, hasil Random Forest tetap ditampilkan apa adanya.
 - Prompt melarang diagnosis pasti, dosis, merek pestisida, dan em dash.
 - Bila label yang disebut model bahasa berbeda dari keluaran Random Forest, layar
   menampilkan catatan perbedaan dan tetap memakai label model sebagai hasil utama.

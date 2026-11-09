@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
@@ -10,46 +9,38 @@ import 'reference_photos.dart';
 
 /// Blok "Tentang kondisi ini" dan "Penanganan awal" yang teksnya dibuat model
 /// bahasa, lengkap dengan status muat, gagal, dan coba lagi.
-class CaptionSection extends ConsumerStatefulWidget {
-  const CaptionSection({super.key, required this.result});
+class CaptionSection extends StatefulWidget {
+  const CaptionSection({
+    super.key,
+    required this.result,
+    required this.request,
+    required this.onRetry,
+  });
 
   final DetectionResult result;
 
+  /// Permintaan caption milik [ResultScreen], supaya hasilnya juga bisa dipakai
+  /// memutuskan apakah foto ini benar-benar daun.
+  final Future<LeafCaption> request;
+  final VoidCallback onRetry;
+
   @override
-  ConsumerState<CaptionSection> createState() => _CaptionSectionState();
+  State<CaptionSection> createState() => _CaptionSectionState();
 }
 
-class _CaptionSectionState extends ConsumerState<CaptionSection> {
-  Future<LeafCaption>? _request;
+class _CaptionSectionState extends State<CaptionSection> {
   bool _showBaseline = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _request = _load();
-  }
-
-  Future<LeafCaption> _load() {
-    final service = ref.read(captionServiceProvider);
-    final cache = ref.read(captionCacheProvider);
-    // Ditunda satu microtask supaya FutureBuilder sudah berlangganan sebelum
-    // kegagalan pertama muncul, sehingga error tampil sebagai Notice.
-    return Future<LeafCaption>(() => cache.load(widget.result, service));
-  }
-
   void _retry() {
-    ref.read(captionCacheProvider).invalidate(widget.result);
-    setState(() {
-      _showBaseline = false;
-      _request = _load();
-    });
+    widget.onRetry();
+    setState(() => _showBaseline = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return FutureBuilder<LeafCaption>(
-      future: _request,
+      future: widget.request,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingMessage('Menyusun keterangan kondisi daun...');

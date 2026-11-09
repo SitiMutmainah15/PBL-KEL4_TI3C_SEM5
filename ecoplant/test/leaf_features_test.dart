@@ -33,6 +33,8 @@ void main() {
     expect(features[16], closeTo(8, 1e-9)); // G=0
     expect(features[24], closeTo(8, 1e-9)); // G=128 -> bin 8
     expect(features[32], closeTo(16, 1e-9)); // B=0 di semua piksel
+    expect(features[48], closeTo(8, 1e-9)); // H=0 untuk merah
+    expect(features[53], closeTo(8, 1e-9)); // H=1/3 untuk hijau
   });
 
   test('single colour image peaks in the last bin', () {
@@ -44,6 +46,7 @@ void main() {
     expect(features[15], closeTo(16, 1e-9));
     expect(features[31], closeTo(16, 1e-9));
     expect(features[47], closeTo(16, 1e-9));
+    expect(features[48], closeTo(16, 1e-9)); // abu-abu masuk bin hue 0
   });
 
   test('tiny image is upscaled to 64x64', () {

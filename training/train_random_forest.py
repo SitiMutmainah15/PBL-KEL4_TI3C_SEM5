@@ -1,4 +1,4 @@
-"""Latih Random Forest 48 fitur histogram RGB dan ekspor ke forest.json.
+"""Latih Random Forest 64 fitur histogram RGB + hue dan ekspor ke forest.json.
 
 Contoh:
     python training/train_random_forest.py --copy-to ecoplant/assets/models
@@ -21,21 +21,41 @@ CLASSES = ["Cordana", "Healthy", "Pestalotiopsis", "Sigatoka"]
 IMAGE_SIZE = (64, 64)
 BINS = 16
 SEED = 42
-N_TREES = 200
+N_TREES = 300
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 
+def hue_histogram(pixels):
+    """Hue 0-1 dari RGB uint8, aturan sama dengan leaf_features.dart."""
+    rgb = pixels.astype(np.int32)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    maxc = rgb.max(axis=2)
+    delta = (maxc - rgb.min(axis=2)).astype(np.float64)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Urutan cabang R, G, B harus sama dengan hue di Dart.
+        hue = np.where(
+            maxc == r,
+            ((g - b) / delta) % 6,
+            np.where(maxc == g, (b - r) / delta + 2, (r - g) / delta + 4),
+        )
+    hue[delta == 0] = 0
+    bins = np.minimum((hue / 6 * BINS).astype(np.int64), BINS - 1)
+    return np.bincount(bins.ravel(), minlength=BINS) * BINS / maxc.size
+
+
 def leaf_features(image):
-    """PIL image -> 48 angka. Sampling nearest harus sama dengan copyResize di Dart."""
+    """PIL image -> 64 angka. Sampling nearest harus sama dengan copyResize di Dart."""
     pixels = np.asarray(ImageOps.exif_transpose(image).convert("RGB"))
     rows = np.arange(IMAGE_SIZE[1]) * pixels.shape[0] // IMAGE_SIZE[1]
     cols = np.arange(IMAGE_SIZE[0]) * pixels.shape[1] // IMAGE_SIZE[0]
-    pixels = pixels[np.ix_(rows, cols)].astype(np.float32) / 255.0
+    pixels = pixels[np.ix_(rows, cols)]
+    scaled = pixels.astype(np.float32) / 255.0
     return np.concatenate(
         [
-            np.histogram(pixels[:, :, ch], bins=BINS, range=(0, 1), density=True)[0]
+            np.histogram(scaled[:, :, ch], bins=BINS, range=(0, 1), density=True)[0]
             for ch in range(3)
         ]
+        + [hue_histogram(pixels)]
     )
 
 
@@ -79,7 +99,7 @@ def export_forest(clf, labels):
                 "p": [[round(float(v), 9) for v in row] for row in probabilities],
             }
         )
-    payload = {"features": BINS * 3, "labels": labels, "trees": trees}
+    payload = {"features": BINS * 4, "labels": labels, "trees": trees}
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
     payload["version"] = f"banana-rf-{digest[:12]}"
     return payload
@@ -121,7 +141,7 @@ def main():
         SimpleImputer(strategy="median"),
         RandomForestClassifier(
             n_estimators=N_TREES,
-            class_weight="balanced",
+            class_weight="balanced_subsample",
             random_state=SEED,
             n_jobs=-1,
         ),
@@ -146,7 +166,7 @@ def main():
         if got != expected:
             raise AssertionError("Ekspor forest.json tidak cocok dengan sklearn")
 
-    assert forest["features"] == 48
+    assert forest["features"] == 64
     assert len(forest["labels"]) == 4 and len(set(forest["labels"])) == 4
     assert len(forest["trees"]) == N_TREES
     assert all(
@@ -166,7 +186,7 @@ def main():
     }
     metadata = {
         "version": forest["version"],
-        "features": 48,
+        "features": BINS * 4,
         "resize": list(IMAGE_SIZE),
         "interpolation": "nearest",
         "color": "RGB",

@@ -34,13 +34,21 @@ const _systemPrompt =
     '4. Jangan memakai tanda pisah panjang (em dash), tanda seru, atau huruf kapital berlebihan.\n'
     '5. Tulis dalam bentuk kalimat utuh, bukan daftar berbutir, dan tanpa judul atau markdown.\n'
     '6. Selalu jujur bahwa ini prediksi model, bukan diagnosis. Sampaikan pengingat itu tepat satu kali '
-    'saja di seluruh jawaban, jangan diulang di field lain.';
+    'saja di seluruh jawaban, jangan diulang di field lain.\n'
+    '7. Field subjek berisi apa yang benar-benar terlihat pada foto: daun_pisang bila objek utamanya '
+    'daun pisang walau sedang sakit, bukan_daun bila objek utamanya benda lain seperti meja, tangan, '
+    'wajah, atau layar, dan tidak_jelas bila objeknya memang daun tetapi terlalu gelap, buram, atau '
+    'terpotong. Jangan menebak daun hanya karena label dari model di perangkat.';
 
 const _responseSchema = {
   'type': 'object',
   'properties': {
     'labelTerdeteksi': {'type': 'string', 'enum': _leafClasses},
     'gambarSesuai': {'type': 'boolean'},
+    'subjek': {
+      'type': 'string',
+      'enum': ['daun_pisang', 'bukan_daun', 'tidak_jelas'],
+    },
     'ringkasan': {'type': 'string'},
     'penanganan': {'type': 'string'},
     'saranFoto': {'type': 'string'},
@@ -48,6 +56,7 @@ const _responseSchema = {
   'required': [
     'labelTerdeteksi',
     'gambarSesuai',
+    'subjek',
     'ringkasan',
     'penanganan',
     'saranFoto',
@@ -169,7 +178,7 @@ class GroqCaptionService implements CaptionService {
           ],
         },
       ],
-      'temperature': 0.7,
+      'temperature': 0.2,
       'top_p': 0.8,
       'max_completion_tokens': 900,
       'reasoning_effort': 'none',

@@ -41,8 +41,7 @@ Arsitektur EcoPlant AI harus:
 
 ### ML Development
 - Python
-- Python
-- scikit-learn (Random Forest, 200 pohon)
+- scikit-learn (Random Forest, 300 pohon)
 - Export `forest.json` + `labels.json`
 
 ---
@@ -176,9 +175,9 @@ Validate readable image
       ↓
 Resize 64×64 nearest
       ↓
-Ekstraksi 48 fitur histogram RGB 0–1
+Ekstraksi 64 fitur histogram RGB + hue 0–1
       ↓
-Traversal 200 pohon (forest.json)
+Traversal 300 pohon (forest.json)
       ↓
 Rata-rata probabilitas daun
       ↓
@@ -227,14 +226,15 @@ Nilai yang dipakai sekarang (`model_metadata.json`):
 - 64×64 RGB, interpolasi nearest,
 - rentang 0–1 (`piksel / 255`),
 - histogram 16 bin per kanal dengan `density=True`,
-- 48 fitur, urutan R(16), G(16), B(16).
+- histogram 16 bin hue (0–1) dari RGB,
+- 64 fitur, urutan R(16), G(16), B(16), H(16).
 
 Implementasi **tidak boleh mengasumsikan formula** lain sampai pipeline training final dikunci.
 
 ### Output contract
 Dokumentasikan:
 - panjang vektor probabilitas (= jumlah label),
-- probabilitas rata-rata 200 pohon, jumlah 1,
+- probabilitas rata-rata 300 pohon, jumlah 1,
 - label order,
 - model version (`version` di `forest.json`).
 
@@ -247,9 +247,9 @@ Setiap model final harus memiliki metadata:
 ```text
 model_name: EcoPlant Banana Leaf Classifier
 model_version: banana-rf-<hash>
-architecture: Random Forest (200 pohon, fitur histogram RGB)
+architecture: Random Forest (300 pohon, fitur histogram RGB + hue)
 classes: 4
-input: 64x64 RGB, 48 fitur histogram
+input: 64x64 RGB, 64 fitur histogram
 trained_at: YYYY-MM-DD
 dataset: BananaLSD (split grup dataset_retrain)
 ```
