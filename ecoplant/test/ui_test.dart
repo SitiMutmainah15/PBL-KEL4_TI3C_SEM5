@@ -222,6 +222,45 @@ void main() {
     await tapText(tester, 'Scan Ulang');
     expect(find.text('Belum ada foto dipilih.'), findsOneWidget);
   });
+  testWidgets('photo that is not a banana leaf shows zero percent', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          historyRepositoryProvider.overrideWithValue(TestHistory()),
+          captionServiceProvider.overrideWithValue(
+            const TestCaptionService(
+              caption: LeafCaption(
+                summary: 'Foto ini memperlihatkan meja dan tangan.',
+                treatment: 'Tidak ada penanganan daun yang bisa disarankan.',
+                photoTip: 'Arahkan kamera ke satu daun pisang yang memenuhi layar.',
+                imageMatches: false,
+                subject: CaptionSubject.notLeaf,
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: appTheme(),
+          home: ResultScreen(result: fixture()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bukan daun pisang'), findsOneWidget);
+    expect(find.text('0.0%'), findsOneWidget);
+    expect(find.text('Sigatoka'), findsNothing);
+    expect(find.text('Tentang kondisi ini'), findsNothing);
+    expect(find.text('Simpan Riwayat'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Scan Ulang'),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Scan Ulang'), findsOneWidget);
+  });
   for (final width in [320.0, 390.0, 480.0]) {
     testWidgets('layout at width $width and 200 percent text', (tester) async {
       await start(tester, width: width, scale: 2);

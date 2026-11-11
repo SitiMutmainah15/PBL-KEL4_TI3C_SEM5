@@ -1,0 +1,38 @@
+{
+  "model": "Random Forest",
+  "metrics": {
+    "accuracy": 0.846441947565543
+  },
+  "labels": [
+    "Cordana",
+    "Healthy",
+    "Pestalotiopsis",
+    "Sigatoka"
+  ],
+  "confusion_matrix": [
+    [
+      43,
+      0,
+      2,
+      8
+    ],
+    [
+      2,
+      35,
+      1,
+      2
+    ],
+    [
+      0,
+      7,
+      47,
+      5
+    ],
+    [
+      2,
+      5,
+      7,
+      101
+    ]
+  ]
+}

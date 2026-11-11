@@ -20,32 +20,35 @@ dan service stub tanpa prediksi palsu pada 24 September 2026.
 
 ## Caption dari model bahasa
 
-Alamat backend ditentukan saat build. Bawaan `10.0.2.2` hanya berlaku di emulator,
-sedangkan HP fisik butuh IP LAN komputer. Pakai `scripts/run-device.ps1` agar
-alamat itu terisi otomatis. Tanpa itu, layar hasil berhenti di status memuat
-karena permintaan menunggu alamat yang tidak ada.
+Kunci Groq disuntikkan saat build oleh `scripts/run-direct.ps1` dari `.env` di root
+proyek. APK yang dibangun tanpa kunci tetap jalan, tapi layar hasil menampilkan pesan
+bahwa kunci belum dipasang dan menawarkan keterangan umum.
 
-Layar hasil kini mengambil teks pendamping dari layanan caption berbasis Groq
-(`backend/`) alih-alih teks statis di aplikasi.
+Layar hasil kini mengambil teks pendamping langsung dari Groq (`GroqCaptionService`)
+alih-alih teks statis di aplikasi.
 
 - Satu permintaan menghasilkan tiga bagian: ringkasan kondisi, penanganan awal,
   dan saran memotret ulang. Model tidak diminta menghitung ulang confidence.
+- Permintaan yang sama juga menilai isi foto (`subjek`: daun pisang, bukan daun,
+  atau tidak jelas). Bila objeknya bukan daun pisang, layar hasil menampilkan
+  "Bukan daun pisang" dengan skor 0% dan menyembunyikan tombol simpan. Bila
+  penilaian gagal, hasil Random Forest tetap ditampilkan apa adanya.
 - Prompt melarang diagnosis pasti, dosis, merek pestisida, dan em dash.
-- Bila label yang disebut model bahasa berbeda dari keluaran TFLite, layar
-  menampilkan catatan perbedaan dan tetap memakai label TFLite sebagai hasil utama.
+- Bila label yang disebut model bahasa berbeda dari keluaran Random Forest, layar
+  menampilkan catatan perbedaan dan tetap memakai label model sebagai hasil utama.
 - Tiga foto pembanding per kelas diambil dari `training/dataset/test/` dan
   dibundel sebagai aset. Ini pembanding tampilan, bukan hasil analisis foto pengguna.
 - Status muat, gagal, dan coba lagi tersedia. Setelah gagal, pengguna dapat memilih
   menampilkan keterangan umum yang ditulis manusia (`baseline_condition.dart`),
   bukan teks karangan model.
-- Permintaan yang sama tidak diulang selama sesi berjalan (cache di memori aplikasi);
-  backend juga menyimpan cache ber-hash untuk foto dan label yang identik.
-- Kunci Groq hanya ada di `backend/.env`. Aplikasi tidak pernah memegang kunci itu.
+- Permintaan yang sama tidak diulang selama sesi berjalan (cache di memori aplikasi).
+- Kunci Groq tertanam di APK, jadi APK hanya dibagikan ke kelompok atau penguji.
 
 ## Batas tahap ini
 
-Stub analisis dan riwayat sengaja mengembalikan kegagalan yang jelas. Tidak ada
-TFLite, Firebase, schema database, autentikasi, atau klaim akurasi yang dibuat.
+Stub analisis dan riwayat sengaja mengembalikan kegagalan yang jelas. Firebase,
+schema database, autentikasi, atau klaim akurasi tidak dibuat di dokumen ini.
+Inferensi memakai `forest.json` (Random Forest) dan dijalankan di perangkat.
 Hasil/sukses penyimpanan hanya diuji menggunakan dependency override di `test/`.
 Daftar riwayat production menampilkan layanan belum tersedia, bukan menganggap
 kegagalan koneksi sebagai daftar kosong.
@@ -57,8 +60,8 @@ Logo khusus belum diberikan; ikon launcher masih bawaan proyek. Informasi
 penyakit dan penanganan spesifik memakai keterangan belum tersedia sampai konten
 terkurasi disetujui. Halaman hasil tidak dapat dicapai dari stub analisis production.
 
-Tahap integrasi berikut memerlukan model `.tflite`, urutan label dari metadata,
-spesifikasi preprocessing training, bukti evaluasi, foto hero, konten penyakit,
+Tahap integrasi berikut memerlukan `forest.json` hasil `training/train_random_forest.py`,
+urutan label dari metadata, bukti evaluasi, foto hero, konten penyakit,
 serta konfigurasi proyek Firebase dan keputusan identitas pengguna. Temporary path foto belum menjadi
 penyimpanan permanen; repository nyata harus menyalin/upload foto sebelum
 mengonfirmasi penyimpanan. Tidak ada pengiriman foto pada tahap ini.
