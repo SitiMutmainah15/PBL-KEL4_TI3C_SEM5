@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:ecoplant/core/storage/photo_storage.dart';
 import 'package:ecoplant/features/detection/detection.dart';
 import 'package:ecoplant/features/detection/leaf_caption.dart';
 import 'package:ecoplant/features/history/history_repository.dart';
@@ -43,6 +45,35 @@ class TestHistory implements HistoryRepository {
     }
     items = [...items.where((item) => item.id != result.id), result];
   }
+
+  @override
+  Future<void> update(DetectionResult result) async {
+    items = [
+      for (final item in items)
+        if (item.id == result.id) result else item,
+    ];
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    items = items.where((item) => item.id != id).toList();
+  }
+}
+
+class TestPhotoStorage implements PhotoStorage {
+  const TestPhotoStorage();
+
+  @override
+  Future<String> saveOriginal(
+    String sourcePath, {
+    bool deleteTemporarySource = false,
+  }) async => sourcePath;
+
+  @override
+  Future<File> thumbnail(String imagePath) async => File(imagePath);
+
+  @override
+  Future<void> delete(String imagePath) async {}
 }
 
 class TestGallery implements GalleryService {

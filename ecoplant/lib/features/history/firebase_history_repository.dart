@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../detection/detection.dart';
-import 'history_repository.dart';
+import 'history_contract.dart';
 
 class FirebaseHistoryRepository implements HistoryRepository {
   FirebaseHistoryRepository({FirebaseFirestore? firestore})
@@ -15,16 +15,36 @@ class FirebaseHistoryRepository implements HistoryRepository {
   @override
   Future<void> save(DetectionResult result) async {
     try {
-      await _collection.doc(result.id).set({
-        'id': result.id,
-        'image_path': result.imagePath,
-        'predicted_class': result.predictedClass.name,
-        'confidence': result.confidence,
-        'model_version': result.modelVersion,
-        'created_at': Timestamp.fromDate(result.createdAt),
-      });
+      await _collection.doc(result.id).set(_toMap(result));
     } catch (e) {
       throw ServiceFailure('Gagal menyimpan riwayat ke cloud: $e');
+    }
+  }
+
+  Map<String, Object> _toMap(DetectionResult result) => {
+    'id': result.id,
+    'image_path': result.imagePath,
+    'predicted_class': result.predictedClass.name,
+    'confidence': result.confidence,
+    'model_version': result.modelVersion,
+    'created_at': Timestamp.fromDate(result.createdAt),
+  };
+
+  @override
+  Future<void> update(DetectionResult result) async {
+    try {
+      await _collection.doc(result.id).update(_toMap(result));
+    } catch (e) {
+      throw ServiceFailure('Gagal memperbarui riwayat di cloud: $e');
+    }
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    try {
+      await _collection.doc(id).delete();
+    } catch (e) {
+      throw ServiceFailure('Gagal menghapus riwayat dari cloud: $e');
     }
   }
 
