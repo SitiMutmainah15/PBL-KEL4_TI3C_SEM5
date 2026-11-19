@@ -1,5 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'storage/photo_storage.dart';
 import 'theme.dart';
 
 class PageBody extends StatelessWidget {
@@ -72,26 +75,52 @@ class LoadingMessage extends StatelessWidget {
   );
 }
 
-class LeafPhoto extends StatelessWidget {
+class LeafPhoto extends ConsumerWidget {
   const LeafPhoto({super.key, required this.path, this.height = 240});
   final String path;
   final double height;
   @override
-  Widget build(BuildContext context) => ClipRRect(
+  Widget build(BuildContext context, WidgetRef ref) => ClipRRect(
     borderRadius: BorderRadius.circular(18),
-    child: Image.file(
-      File(path),
-      width: double.infinity,
-      height: height,
-      fit: BoxFit.cover,
-      semanticLabel: 'Foto daun yang diperiksa',
-      errorBuilder: (_, error, stack) => Container(
-        height: height,
-        color: AppColors.cream100,
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(16),
-        child: const Text('Foto tidak tersedia.', textAlign: TextAlign.center),
-      ),
+    child: FutureBuilder(
+      future: ref.read(photoStorageProvider).thumbnail(path),
+      builder: (context, snapshot) {
+        final file = snapshot.data;
+        if (file == null && !snapshot.hasError) {
+          return SizedBox(
+            width: double.infinity,
+            height: height,
+            child: const ColoredBox(
+              color: AppColors.cream100,
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Image.file(
+          file ?? File(path),
+          width: double.infinity,
+          height: height,
+          fit: BoxFit.cover,
+          semanticLabel: 'Foto daun yang diperiksa',
+          errorBuilder: (_, error, stack) => Container(
+            height: height,
+            color: AppColors.cream100,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(16),
+            child: const Text(
+              'Foto tidak tersedia.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      },
     ),
   );
 }

@@ -36,6 +36,46 @@ class HistoryContent extends ConsumerWidget {
   final VoidCallback onScan;
   final int? limit;
   final bool compact;
+
+  Future<void> _delete(
+    BuildContext context,
+    WidgetRef ref,
+    DetectionResult item,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus riwayat?'),
+        content: const Text(
+          'Foto asli dan data hasil deteksi ini akan dihapus dari perangkat.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(historyRepositoryProvider).delete(item.id);
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Riwayat gagal dihapus: $error')),
+        );
+      }
+    } finally {
+      if (context.mounted) ref.invalidate(historyProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) => ref
       .watch(historyProvider)
@@ -47,7 +87,7 @@ class HistoryContent extends ConsumerWidget {
             Notice(
               error is ServiceFailure
                   ? error.message
-                  : 'Riwayat gagal dimuat. Periksa koneksi Anda lalu coba lagi.',
+                  : 'Riwayat gagal dimuat. Periksa penyimpanan aplikasi lalu coba lagi.',
               error: true,
             ),
             const SizedBox(height: 12),
@@ -184,9 +224,13 @@ class HistoryContent extends ConsumerWidget {
                                 ),
                               )
                             else
-                              const Icon(
-                                Icons.chevron_right,
-                                color: AppColors.forest900,
+                              IconButton(
+                                tooltip: 'Hapus riwayat',
+                                onPressed: () => _delete(context, ref, item),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: AppColors.error,
+                                ),
                               ),
                           ],
                         ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/storage/photo_storage.dart';
 import '../detection/detection.dart';
 
 abstract interface class GalleryService {
@@ -68,13 +69,16 @@ class ScanController extends Notifier<ScanState> {
     if (!state.busy) state = const ScanState();
   }
 
-  Future<void> select(String path) async {
+  Future<void> select(String path, {bool deleteTemporarySource = false}) async {
     if (state.busy) return;
     final previous = state.imagePath;
     state = ScanState(imagePath: previous, busy: true);
     try {
       await ref.read(imageValidatorProvider)(path);
-      if (ref.mounted) state = ScanState(imagePath: path);
+      final savedPath = await ref
+          .read(photoStorageProvider)
+          .saveOriginal(path, deleteTemporarySource: deleteTemporarySource);
+      if (ref.mounted) state = ScanState(imagePath: savedPath);
     } catch (error) {
       if (ref.mounted) {
         state = ScanState(
@@ -96,7 +100,9 @@ class ScanController extends Notifier<ScanState> {
       final path = await (recover ? gallery.recover() : gallery.pick());
       if (!ref.mounted) return;
       state = ScanState(imagePath: previous);
-      if (path != null) await select(path);
+      if (path != null) {
+        await select(path, deleteTemporarySource: true);
+      }
     } catch (_) {
       if (ref.mounted) {
         state = ScanState(

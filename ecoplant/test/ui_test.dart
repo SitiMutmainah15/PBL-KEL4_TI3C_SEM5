@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ecoplant/app.dart';
+import 'package:ecoplant/core/storage/photo_storage.dart';
 import 'package:ecoplant/core/theme.dart';
 import 'package:ecoplant/features/detection/detection.dart';
 import 'package:ecoplant/features/detection/leaf_caption.dart';
@@ -67,6 +68,7 @@ void main() {
           historyRepositoryProvider.overrideWithValue(
             repository ?? TestHistory(),
           ),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           galleryServiceProvider.overrideWithValue(TestGallery()),
           captionServiceProvider.overrideWithValue(const TestCaptionService()),
         ],
@@ -116,6 +118,7 @@ void main() {
       ProviderScope(
         overrides: [
           historyRepositoryProvider.overrideWithValue(repository),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           captionServiceProvider.overrideWithValue(const TestCaptionService()),
         ],
         child: MaterialApp(
@@ -144,6 +147,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Pemeriksaan daun Anda'), findsOneWidget);
   });
+  testWidgets('history can delete a saved result after confirmation', (
+    tester,
+  ) async {
+    final repository = TestHistory(items: [fixture()]);
+    await start(tester, repository: repository);
+    await tapText(tester, 'Riwayat');
+    await tester.tap(find.byTooltip('Hapus riwayat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hapus riwayat?'), findsOneWidget);
+    await tapText(tester, 'Hapus');
+    expect(find.text('Belum ada hasil deteksi.'), findsOneWidget);
+    expect(repository.items, isEmpty);
+  });
   testWidgets(
     'save failure preserves result, retry saves once, rescan returns',
     (tester) async {
@@ -152,6 +168,7 @@ void main() {
         ProviderScope(
           overrides: [
             historyRepositoryProvider.overrideWithValue(repository),
+            photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
             captionServiceProvider.overrideWithValue(
               const TestCaptionService(),
             ),
@@ -201,6 +218,7 @@ void main() {
       ProviderScope(
         overrides: [
           historyRepositoryProvider.overrideWithValue(TestHistory()),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           galleryServiceProvider.overrideWithValue(gallery),
           imageValidatorProvider.overrideWithValue((_) async {}),
           detectionServiceProvider.overrideWithValue(TestDetection(pending)),
@@ -229,12 +247,14 @@ void main() {
       ProviderScope(
         overrides: [
           historyRepositoryProvider.overrideWithValue(TestHistory()),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           captionServiceProvider.overrideWithValue(
             const TestCaptionService(
               caption: LeafCaption(
                 summary: 'Foto ini memperlihatkan meja dan tangan.',
                 treatment: 'Tidak ada penanganan daun yang bisa disarankan.',
-                photoTip: 'Arahkan kamera ke satu daun pisang yang memenuhi layar.',
+                photoTip:
+                    'Arahkan kamera ke satu daun pisang yang memenuhi layar.',
                 imageMatches: false,
                 subject: CaptionSubject.notLeaf,
               ),
@@ -293,6 +313,7 @@ void main() {
           historyRepositoryProvider.overrideWithValue(
             TestHistory(items: [fixture()]),
           ),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
         ],
         child: RepaintBoundary(
           key: key,

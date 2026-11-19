@@ -13,7 +13,17 @@ dan service stub tanpa prediksi palsu pada 24 September 2026.
   ambil ulang, ganti foto, dan batal foto.
 - Kontrak analisis serta tampilan loading/error. Tidak ada hasil sintetis di aplikasi.
 - Layar hasil dan detail riwayat menerima `DetectionResult` dari layanan.
-- Kontrak repository riwayat; tampilan loading, error/retry, kosong, dan daftar.
+- Riwayat production memakai SQLite lokal dengan operasi buat, baca, perbarui,
+  dan hapus; tampilan loading, error/retry, kosong, daftar, dan konfirmasi hapus.
+- Foto kamera/galeri disalin ke direktori privat aplikasi sebelum dianalisis.
+  SQLite menyimpan path foto asli, sementara thumbnail dibuat dan dikelola di
+  cache sementara sehingga dapat dibuat ulang tanpa kehilangan foto.
+- `path_provider_android` dipatok ke 2.2.23: implementasi JNI pada 2.3.x gagal
+  menemukan kelas `android.content.Context` di aplikasi ini. Pengujian Android
+  memverifikasi akses path provider dan operasi SQLite secara langsung.
+- Analisis Random Forest dan riwayat dapat digunakan offline. Firebase Core dan
+  konfigurasi platform tetap dipertahankan; riwayat lokal tidak memerlukan
+  Firestore. Keterangan caption dari Groq tetap merupakan fitur opsional online.
 - Penanganan gagal simpan mempertahankan hasil. Berhasil simpan menginvalidasi
   daftar dan menonaktifkan penyimpanan ulang pada layar yang sama.
 - Model version tersedia pada kontrak hasil; confidence divalidasi dalam 0..1.
@@ -46,12 +56,11 @@ alih-alih teks statis di aplikasi.
 
 ## Batas tahap ini
 
-Stub analisis dan riwayat sengaja mengembalikan kegagalan yang jelas. Firebase,
-schema database, autentikasi, atau klaim akurasi tidak dibuat di dokumen ini.
 Inferensi memakai `forest.json` (Random Forest) dan dijalankan di perangkat.
-Hasil/sukses penyimpanan hanya diuji menggunakan dependency override di `test/`.
-Daftar riwayat production menampilkan layanan belum tersedia, bukan menganggap
-kegagalan koneksi sebagai daftar kosong.
+Penyimpanan lokal tidak disinkronkan ke cloud; penghapusan cache thumbnail tidak
+menghapus database atau foto asli. Seperti data aplikasi lokal lainnya, foto dan
+riwayat akan terhapus bila data aplikasi dihapus atau aplikasi di-uninstall.
+Firebase Core tetap diinisialisasi dengan konfigurasi platform yang tersedia.
 
 Foto hero memakai placeholder berlabel sampai aset foto pisang tersedia.
 Percobaan pengunduhan foto public domain dari Wikimedia ditolak HTTP 429;
@@ -60,11 +69,9 @@ Logo khusus belum diberikan; ikon launcher masih bawaan proyek. Informasi
 penyakit dan penanganan spesifik memakai keterangan belum tersedia sampai konten
 terkurasi disetujui. Halaman hasil tidak dapat dicapai dari stub analisis production.
 
-Tahap integrasi berikut memerlukan `forest.json` hasil `training/train_random_forest.py`,
-urutan label dari metadata, bukti evaluasi, foto hero, konten penyakit,
-serta konfigurasi proyek Firebase dan keputusan identitas pengguna. Temporary path foto belum menjadi
-penyimpanan permanen; repository nyata harus menyalin/upload foto sebelum
-mengonfirmasi penyimpanan. Tidak ada pengiriman foto pada tahap ini.
+Penyimpanan cloud atau sinkronisasi antarperangkat belum diimplementasikan.
+Caption Groq membutuhkan jaringan, tetapi kegagalannya tidak memblokir analisis
+on-device maupun simpan/baca riwayat lokal.
 
 ## Keputusan desain
 
@@ -80,9 +87,9 @@ gradient, glow, glass, dekorasi sparkle, atau animasi dekoratif.
 
 ## Verifikasi
 
-Hasil terakhir: format lulus, analyzer tanpa temuan selain info nama berkas lama,
-26 tes Flutter dan 11 tes backend lulus. Uji live ke Groq dan endpoint caption
-dijalankan pada lingkungan ini.
+Tes repository SQLite mencakup penyimpanan setelah database dibuka ulang,
+CRUD, dan penanganan ID yang tidak ditemukan. Tes Flutter juga mencakup tampilan
+konfirmasi hapus riwayat.
 
 Jalankan dari folder `ecoplant`:
 
@@ -134,6 +141,13 @@ diuji. Belum ada uji kamera/izin/lifecycle pada perangkat Android fisik.
 - [Riverpod](https://pub.dev/packages/flutter_riverpod): state dan dependency overrides.
 - [camera](https://pub.dev/packages/camera): preview/capture native, izin dan lifecycle.
 - [image_picker](https://pub.dev/packages/image_picker): galeri dan recovery Android.
+- [sqflite](https://pub.dev/packages/sqflite): riwayat lokal di SQLite.
+- [path_provider](https://pub.dev/packages/path_provider): direktori privat dan
+  lokasi cache perangkat.
+- [flutter_cache_manager](https://pub.dev/packages/flutter_cache_manager): cache
+  thumbnail sementara.
+- [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi): SQLite pada
+  Windows/Linux dan pengujian repository.
 - [http](https://pub.dev/packages/http): unggah multipart foto ke layanan caption.
 
 Versi terkunci pada `pubspec.lock`, sesuai SDK proyek. File registrasi plugin

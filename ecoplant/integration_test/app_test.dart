@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:ecoplant/app.dart';
+import 'package:ecoplant/core/storage/photo_storage.dart';
 import 'package:ecoplant/features/detection/detection.dart';
 import 'package:ecoplant/features/detection/leaf_caption.dart';
 import 'package:ecoplant/features/history/history_repository.dart';
+import 'package:ecoplant/features/history/local_history_repository.dart';
 import 'package:ecoplant/features/scan/scan_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,30 @@ class _MemoryHistory implements HistoryRepository {
 
   @override
   Future<void> save(DetectionResult result) async => items.add(result);
+
+  @override
+  Future<void> update(DetectionResult result) async {
+    final index = items.indexWhere((item) => item.id == result.id);
+    if (index >= 0) items[index] = result;
+  }
+
+  @override
+  Future<void> delete(String id) async =>
+      items.removeWhere((item) => item.id == id);
+}
+
+class _MemoryPhotoStorage implements PhotoStorage {
+  @override
+  Future<String> saveOriginal(
+    String sourcePath, {
+    bool deleteTemporarySource = false,
+  }) async => sourcePath;
+
+  @override
+  Future<File> thumbnail(String imagePath) async => File(imagePath);
+
+  @override
+  Future<void> delete(String imagePath) async {}
 }
 
 class _FixedGallery implements GalleryService {
@@ -125,6 +151,7 @@ void main() {
           historyRepositoryProvider.overrideWith(
             (ref) => history ?? _MemoryHistory(),
           ),
+          photoStorageProvider.overrideWith((ref) => _MemoryPhotoStorage()),
           galleryServiceProvider.overrideWith(
             (ref) => gallery ?? _FixedGallery(imagePath),
           ),
@@ -368,6 +395,45 @@ void main() {
     );
     await scrollTop(tester);
     expect(find.text('Mulai dari satu daun.'), findsOneWidget);
+  });
+
+  testWidgets('14. SQLite mobile dapat membuat, membaca, dan menghapus data', (
+    tester,
+  ) async {
+    final sqlitePhoto = File('${tempDir.path}/sqlite-leaf.png');
+    await sqlitePhoto.writeAsBytes(
+      img.encodePng(img.Image(width: 32, height: 32)),
+    );
+    final repository = LocalHistoryRepository();
+    final resultId = 'mobile-sqlite-${DateTime.now().microsecondsSinceEpoch}';
+    final sqliteResult = DetectionResult(
+      id: resultId,
+      imagePath: sqlitePhoto.path,
+      predictedClass: LeafClass.sigatoka,
+      confidence: 0.9,
+      createdAt: DateTime.now(),
+      modelVersion: 'integration-test',
+    );
+
+    await repository.save(sqliteResult);
+    expect(
+      (await repository.load()).any((item) => item.id == resultId),
+      isTrue,
+    );
+
+    await repository.close();
+    final reopenedRepository = LocalHistoryRepository();
+    expect(
+      (await reopenedRepository.load()).any((item) => item.id == resultId),
+      isTrue,
+    );
+    await reopenedRepository.delete(resultId);
+    expect(
+      (await reopenedRepository.load()).any((item) => item.id == resultId),
+      isFalse,
+    );
+    expect(await sqlitePhoto.exists(), isFalse);
+    await reopenedRepository.close();
   });
 
   testWidgets('12. batalkan foto mengosongkan pilihan', (tester) async {

@@ -26,7 +26,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       context,
     ).push<String>(MaterialPageRoute(builder: (_) => const CameraCapture()));
     if (path != null && mounted) {
-      await ref.read(scanProvider.notifier).select(path);
+      await ref
+          .read(scanProvider.notifier)
+          .select(path, deleteTemporarySource: true);
     }
   }
 
