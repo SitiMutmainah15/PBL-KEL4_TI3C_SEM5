@@ -1,3 +1,4 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "C:/Users/WINDOWS 11/PBL-KEL4_TI3C_SEM5/ecoplant/linux"
 }

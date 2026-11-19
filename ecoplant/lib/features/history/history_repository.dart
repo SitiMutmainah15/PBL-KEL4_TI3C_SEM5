@@ -1,26 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../detection/detection.dart';
-import 'firebaseHistoryRepository.dart';
+import 'local_history_repository.dart';
+import 'history_contract.dart';
 
-abstract interface class HistoryRepository {
-  Future<List<DetectionResult>> load();
-  Future<void> save(DetectionResult result);
-}
-
-class UnavailableHistoryRepository implements HistoryRepository {
-  const UnavailableHistoryRepository();
-  static const message =
-      'Penyimpanan riwayat belum tersedia pada versi ini. Silakan coba kembali setelah layanan tersedia.';
-  @override
-  Future<List<DetectionResult>> load() async =>
-      throw const ServiceFailure(message);
-  @override
-  Future<void> save(DetectionResult result) async =>
-      throw const ServiceFailure(message);
-}
+export 'history_contract.dart';
 
 final historyRepositoryProvider = Provider<HistoryRepository>(
-  (ref) => FirebaseHistoryRepository(),
+  (ref) => LocalHistoryRepository(),
 );
 final historyProvider = FutureProvider<List<DetectionResult>>((ref) async {
   final items = await ref.watch(historyRepositoryProvider).load();
