@@ -295,6 +295,9 @@ void main() {
   }
   testWidgets('keyboard can activate primary action', (tester) async {
     await start(tester);
+    // Tab past the Helpdesk action before activating Scan Daun.
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);

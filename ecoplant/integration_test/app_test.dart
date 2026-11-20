@@ -8,13 +8,13 @@ import 'package:ecoplant/features/history/history_repository.dart';
 import 'package:ecoplant/features/history/local_history_repository.dart';
 import 'package:ecoplant/features/scan/scan_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:integration_test/integration_test.dart';
 
-/// Integration test on a real device: no camera, gallery, TFLite or Firebase.
-/// Those edges are replaced by fakes so the screens run as they do on a phone.
+/// Exercises the Flutter screens on Android with controlled service responses.
 class _MemoryHistory implements HistoryRepository {
   _MemoryHistory([List<DetectionResult>? seed]) : items = [...?seed];
   final List<DetectionResult> items;
@@ -169,17 +169,23 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> showInViewport(WidgetTester tester, Finder target) async {
+    await tester.scrollUntilVisible(
+      target,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
+    await tester.pumpAndSettle();
+  }
+
   /// Beranda -> tab Scan -> pilih foto dari galeri -> Analisis.
   Future<void> openResult(WidgetTester tester) async {
     await tester.tap(find.text('Scan Daun'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Pilih dari Galeri'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Analisis'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await showInViewport(tester, find.text('Analisis'));
     await tester.tap(find.text('Analisis'));
     await tester.pumpAndSettle();
   }
@@ -189,7 +195,118 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('1. splash tampil lalu berpindah ke beranda', (tester) async {
+  Future<void> openHelpdesk(WidgetTester tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('Helpdesk'));
+    await tester.pumpAndSettle();
+    expect(find.text('Helpdesk'), findsOneWidget);
+  }
+
+  Future<void> tapSendEmail(WidgetTester tester) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    for (
+      var frame = 0;
+      frame < 20 && tester.view.viewInsets.bottom > 0;
+      frame++
+    ) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final button = find.widgetWithText(FilledButton, 'Kirim Email');
+    await showInViewport(tester, button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('TS-015 TC-036: membuka dan menutup ketiga FAQ Helpdesk', (
+    tester,
+  ) async {
+    await openHelpdesk(tester);
+    for (final entry in {
+      'Bagaimana cara memindai daun?': 'Buka tab Scan, lalu ambil foto',
+      'Kenapa kamera atau galeri tidak terbuka?':
+          'Periksa izin kamera dan foto',
+      'Di mana hasil pemindaian sebelumnya?':
+          'Buka tab Riwayat dan pilih hasil',
+    }.entries) {
+      final question = find.text(entry.key);
+      final answer = find.textContaining(entry.value);
+      await showInViewport(tester, question);
+      await tester.tap(question);
+      await tester.pumpAndSettle();
+      expect(answer, findsOneWidget);
+      await tester.tap(question);
+      await tester.pumpAndSettle();
+      expect(answer, findsNothing);
+    }
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Scan Daun'), findsOneWidget);
+  });
+
+  testWidgets('TS-016 TC-037: Helpdesk menolak deskripsi kosong dan spasi', (
+    tester,
+  ) async {
+    await openHelpdesk(tester);
+    await tapSendEmail(tester);
+    expect(find.text('Isi deskripsi kendala.'), findsOneWidget);
+    final description = find.byType(TextFormField);
+    await showInViewport(tester, description);
+    await tester.enterText(description, '   ');
+    await tapSendEmail(tester);
+    expect(find.text('Isi deskripsi kendala.'), findsOneWidget);
+    expect(find.text('Helpdesk'), findsOneWidget);
+  });
+
+  testWidgets('TS-016 TC-038 / TC-039: URI draf dan kegagalan pembuka email', (
+    tester,
+  ) async {
+    const launchChannel = BasicMessageChannel<Object?>(
+      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+      StandardMessageCodec(),
+    );
+    final messenger = tester.binding.defaultBinaryMessenger;
+    Uri? openedEmail;
+    messenger.setMockDecodedMessageHandler(launchChannel, (message) async {
+      final arguments = message! as List<Object?>;
+      openedEmail = Uri.parse(arguments.first! as String);
+      return <Object?>[false];
+    });
+    addTearDown(
+      () => messenger.setMockDecodedMessageHandler(launchChannel, null),
+    );
+
+    await openHelpdesk(tester);
+    final category = find.byType(DropdownButtonFormField<String>);
+    await showInViewport(tester, category);
+    await tester.tap(category);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Riwayat').last);
+    await tester.pumpAndSettle();
+    final description = find.byType(TextFormField);
+    await showInViewport(tester, description);
+    await tester.enterText(description, 'Riwayat tidak tampil & foto hilang?');
+    await tapSendEmail(tester);
+    expect(openedEmail?.scheme, 'mailto');
+    expect(openedEmail?.path, 'fatahaidaraly@gmail.com');
+    expect(openedEmail?.queryParameters, {
+      'subject': 'Laporan kendala EcoPlant AI',
+      'body': 'Kategori: Riwayat\n\nRiwayat tidak tampil & foto hilang?',
+    });
+    expect(
+      find.textContaining('Aplikasi email tidak dapat dibuka.'),
+      findsOneWidget,
+    );
+    expect(find.text('Helpdesk'), findsOneWidget);
+    expect(
+      tester.widget<TextFormField>(description).controller?.text,
+      'Riwayat tidak tampil & foto hilang?',
+    );
+  });
+
+  testWidgets('TS-001 TC-001: splash tampil lalu berpindah ke Beranda', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -205,50 +322,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Cek kesehatan'), findsOneWidget);
+    await showInViewport(tester, find.text('Belum ada hasil deteksi.'));
     expect(find.text('Belum ada hasil deteksi.'), findsOneWidget);
   });
 
-  testWidgets('2. pilih foto, analisis, lalu simpan ke riwayat', (
-    tester,
-  ) async {
-    final history = _MemoryHistory();
-    await pumpApp(tester, history: history);
+  testWidgets(
+    'TS-005 TC-010 / TS-010 TC-022: pilih foto dan simpan hasil dengan fixture',
+    (tester) async {
+      final history = _MemoryHistory();
+      await pumpApp(tester, history: history);
 
-    await tester.tap(find.text('Scan Daun'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mulai dari satu daun.'), findsOneWidget);
+      await tester.tap(find.text('Scan Daun'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mulai dari satu daun.'), findsOneWidget);
 
-    await tester.tap(find.text('Pilih dari Galeri'));
-    await tester.pumpAndSettle();
-    expect(find.text('Periksa foto Anda'), findsOneWidget);
+      await tester.tap(find.text('Pilih dari Galeri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Periksa foto Anda'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Analisis'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Analisis'));
-    await tester.pumpAndSettle();
+      await showInViewport(tester, find.text('Analisis'));
+      await tester.tap(find.text('Analisis'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Hasil Deteksi'), findsOneWidget);
-    expect(find.text('Sigatoka'), findsOneWidget);
-    expect(find.text('92.0%'), findsOneWidget);
+      expect(find.text('Hasil Deteksi'), findsOneWidget);
+      expect(find.text('Sigatoka'), findsOneWidget);
+      expect(find.text('92.0%'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Simpan Riwayat'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Simpan Riwayat'));
-    await tester.pumpAndSettle();
+      await showInViewport(tester, find.text('Simpan Riwayat'));
+      await tester.tap(find.text('Simpan Riwayat'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Hasil berhasil disimpan ke riwayat.'), findsOneWidget);
-    expect(history.items.single.predictedClass, LeafClass.sigatoka);
-  });
+      expect(find.text('Hasil berhasil disimpan ke riwayat.'), findsOneWidget);
+      expect(history.items.single.predictedClass, LeafClass.sigatoka);
+    },
+  );
 
-  testWidgets('3. riwayat menampilkan hasil tersimpan dan detailnya', (
-    tester,
-  ) async {
+  testWidgets('TS-011 TC-027: buka detail hasil dari riwayat', (tester) async {
     await pumpApp(tester, history: _MemoryHistory([sample]));
 
     await tester.tap(find.text('Riwayat'));
@@ -263,7 +372,9 @@ void main() {
     expect(find.text('Sigatoka'), findsOneWidget);
   });
 
-  testWidgets('4. keterangan kondisi tampil di layar hasil', (tester) async {
+  testWidgets('TS-013 TC-031: keterangan dan foto pembanding dengan fixture', (
+    tester,
+  ) async {
     await pumpApp(tester);
 
     await openResult(tester);
@@ -275,87 +386,87 @@ void main() {
     expect(find.text('Saran foto berikutnya'), findsOneWidget);
   });
 
-  testWidgets('5. keterangan tidak diminta ulang untuk hasil yang sama', (
-    tester,
-  ) async {
-    final caption = _FakeCaption();
-    await pumpApp(tester, caption: caption);
+  testWidgets(
+    'Regresi TS-013: keterangan tidak diminta ulang untuk hasil yang sama',
+    (tester) async {
+      final caption = _FakeCaption();
+      await pumpApp(tester, caption: caption);
 
-    await openResult(tester);
-    expect(caption.calls, 1);
+      await openResult(tester);
+      expect(caption.calls, 1);
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Analisis'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Analisis'));
-    await tester.pumpAndSettle();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await showInViewport(tester, find.text('Analisis'));
+      await tester.tap(find.text('Analisis'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Ringkasan uji untuk Sigatoka.'), findsOneWidget);
-    expect(caption.calls, 1);
-  });
+      expect(find.text('Ringkasan uji untuk Sigatoka.'), findsOneWidget);
+      expect(caption.calls, 1);
+    },
+  );
 
-  testWidgets('6. keterangan gagal menyediakan keterangan umum', (
-    tester,
-  ) async {
-    await pumpApp(tester, caption: _FakeCaption(failuresLeft: 99));
+  testWidgets(
+    'TS-013 TC-032: keterangan umum saat layanan gagal dengan fixture',
+    (tester) async {
+      await pumpApp(tester, caption: _FakeCaption(failuresLeft: 99));
 
-    await openResult(tester);
+      await openResult(tester);
 
-    expect(find.text('Keterangan uji gagal dimuat.'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Tampilkan keterangan umum'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Tampilkan keterangan umum'));
-    await tester.pumpAndSettle();
+      expect(find.text('Keterangan uji gagal dimuat.'), findsOneWidget);
+      await showInViewport(tester, find.text('Tampilkan keterangan umum'));
+      await tester.tap(find.text('Tampilkan keterangan umum'));
+      await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('Sigatoka merupakan penyakit bercak daun'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Pantau perkembangan bercak pada daun'),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.textContaining('Sigatoka merupakan penyakit bercak daun'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Pantau perkembangan bercak pada daun'),
+        findsOneWidget,
+      );
+    },
+  );
 
-  testWidgets('7. coba lagi memuat keterangan setelah gagal', (tester) async {
-    final caption = _FakeCaption(failuresLeft: 1);
-    await pumpApp(tester, caption: caption);
+  testWidgets(
+    'TS-013 TC-033: coba lagi memuat keterangan dan foto pembanding',
+    (tester) async {
+      final caption = _FakeCaption(failuresLeft: 1);
+      await pumpApp(tester, caption: caption);
 
-    await openResult(tester);
-    expect(find.text('Keterangan uji gagal dimuat.'), findsOneWidget);
+      await openResult(tester);
+      expect(find.text('Keterangan uji gagal dimuat.'), findsOneWidget);
 
-    await tester.tap(find.text('Coba Lagi'));
-    await tester.pumpAndSettle();
+      await showInViewport(tester, find.text('Coba Lagi'));
+      await tester.tap(find.text('Coba Lagi'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Ringkasan uji untuk Sigatoka.'), findsOneWidget);
-    expect(caption.calls, 2);
-  });
+      expect(find.text('Ringkasan uji untuk Sigatoka.'), findsOneWidget);
+      expect(find.text('Foto pembanding'), findsOneWidget);
+      expect(caption.calls, 2);
+    },
+  );
 
-  testWidgets('8. label model bahasa yang berbeda diberi penjelasan', (
-    tester,
-  ) async {
-    await pumpApp(tester, caption: _FakeCaption(detectedLabel: 'cordana'));
+  testWidgets(
+    'Regresi TS-013: label model bahasa yang berbeda diberi penjelasan',
+    (tester) async {
+      await pumpApp(tester, caption: _FakeCaption(detectedLabel: 'cordana'));
 
-    await openResult(tester);
+      await openResult(tester);
 
-    expect(
-      find.textContaining('Model bahasa menyebut Cordana'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('sedangkan model gambar menyebut Sigatoka'),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.textContaining('Model bahasa menyebut Cordana'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('sedangkan model gambar menyebut Sigatoka'),
+        findsOneWidget,
+      );
+    },
+  );
 
-  testWidgets('9. foto yang dinilai sulit dibaca memakai judul khusus', (
+  testWidgets('Regresi TS-013: foto yang sulit dibaca memakai judul khusus', (
     tester,
   ) async {
     await pumpApp(tester, caption: _FakeCaption(imageMatches: false));
@@ -367,7 +478,9 @@ void main() {
     expect(find.text('Saran foto uji.'), findsOneWidget);
   });
 
-  testWidgets('10. galeri gagal dibuka menampilkan pesan izin', (tester) async {
+  testWidgets('Regresi TS-005: galeri gagal dibuka menampilkan pesan izin', (
+    tester,
+  ) async {
     await pumpApp(tester, gallery: _BrokenGallery());
 
     await tester.tap(find.text('Scan Daun'));
@@ -381,7 +494,9 @@ void main() {
     expect(find.text('Buka Kamera'), findsOneWidget);
   });
 
-  testWidgets('11. berkas yang bukan gambar ditolak', (tester) async {
+  testWidgets('TS-007 TC-012: berkas yang bukan gambar ditolak', (
+    tester,
+  ) async {
     await pumpApp(tester, gallery: _FixedGallery(textPath));
 
     await tester.tap(find.text('Scan Daun'));
@@ -397,46 +512,49 @@ void main() {
     expect(find.text('Mulai dari satu daun.'), findsOneWidget);
   });
 
-  testWidgets('14. SQLite mobile dapat membuat, membaca, dan menghapus data', (
+  testWidgets(
+    'TS-011 TC-028 / TS-014 TC-035: persistensi SQLite dengan fixture',
+    (tester) async {
+      final sqlitePhoto = File('${tempDir.path}/sqlite-leaf.png');
+      await sqlitePhoto.writeAsBytes(
+        img.encodePng(img.Image(width: 32, height: 32)),
+      );
+      final repository = LocalHistoryRepository();
+      final resultId = 'mobile-sqlite-${DateTime.now().microsecondsSinceEpoch}';
+      final sqliteResult = DetectionResult(
+        id: resultId,
+        imagePath: sqlitePhoto.path,
+        predictedClass: LeafClass.sigatoka,
+        confidence: 0.9,
+        createdAt: DateTime.now(),
+        modelVersion: 'integration-test',
+      );
+
+      await repository.save(sqliteResult);
+      expect(
+        (await repository.load()).any((item) => item.id == resultId),
+        isTrue,
+      );
+
+      await repository.close();
+      final reopenedRepository = LocalHistoryRepository();
+      expect(
+        (await reopenedRepository.load()).any((item) => item.id == resultId),
+        isTrue,
+      );
+      await reopenedRepository.delete(resultId);
+      expect(
+        (await reopenedRepository.load()).any((item) => item.id == resultId),
+        isFalse,
+      );
+      expect(await sqlitePhoto.exists(), isFalse);
+      await reopenedRepository.close();
+    },
+  );
+
+  testWidgets('Regresi TS-007: batalkan foto mengosongkan pilihan', (
     tester,
   ) async {
-    final sqlitePhoto = File('${tempDir.path}/sqlite-leaf.png');
-    await sqlitePhoto.writeAsBytes(
-      img.encodePng(img.Image(width: 32, height: 32)),
-    );
-    final repository = LocalHistoryRepository();
-    final resultId = 'mobile-sqlite-${DateTime.now().microsecondsSinceEpoch}';
-    final sqliteResult = DetectionResult(
-      id: resultId,
-      imagePath: sqlitePhoto.path,
-      predictedClass: LeafClass.sigatoka,
-      confidence: 0.9,
-      createdAt: DateTime.now(),
-      modelVersion: 'integration-test',
-    );
-
-    await repository.save(sqliteResult);
-    expect(
-      (await repository.load()).any((item) => item.id == resultId),
-      isTrue,
-    );
-
-    await repository.close();
-    final reopenedRepository = LocalHistoryRepository();
-    expect(
-      (await reopenedRepository.load()).any((item) => item.id == resultId),
-      isTrue,
-    );
-    await reopenedRepository.delete(resultId);
-    expect(
-      (await reopenedRepository.load()).any((item) => item.id == resultId),
-      isFalse,
-    );
-    expect(await sqlitePhoto.exists(), isFalse);
-    await reopenedRepository.close();
-  });
-
-  testWidgets('12. batalkan foto mengosongkan pilihan', (tester) async {
     await pumpApp(tester);
 
     await tester.tap(find.text('Scan Daun'));
@@ -445,11 +563,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Periksa foto Anda'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Batalkan Foto'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await showInViewport(tester, find.text('Batalkan Foto'));
     await tester.tap(find.text('Batalkan Foto'));
     await tester.pumpAndSettle();
     await scrollTop(tester);
@@ -458,16 +572,14 @@ void main() {
     expect(find.text('Belum ada foto dipilih.'), findsOneWidget);
   });
 
-  testWidgets('13. scan ulang mengosongkan hasil sebelumnya', (tester) async {
+  testWidgets('TS-009 TC-020: scan ulang mengosongkan pilihan foto', (
+    tester,
+  ) async {
     await pumpApp(tester);
 
     await openResult(tester);
 
-    await tester.scrollUntilVisible(
-      find.text('Scan Ulang'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await showInViewport(tester, find.text('Scan Ulang'));
     await tester.tap(find.text('Scan Ulang'));
     await tester.pumpAndSettle();
     await scrollTop(tester);

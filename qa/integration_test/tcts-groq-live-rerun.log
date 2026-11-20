@@ -1,0 +1,23 @@
+﻿{"protocolVersion":"0.1.1","runnerVersion":"1.30.0","pid":21904,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"C:/Users/arysf/Documents/kuliah/PBL/Semester_5/PBL-KEL4_TI3C_SEM5/ecoplant/test/tcts_groq_rerun_tmp_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading C:/Users/arysf/Documents/kuliah/PBL/Semester_5/PBL-KEL4_TI3C_SEM5/ecoplant/test/tcts_groq_rerun_tmp_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"count":1,"time":5,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":2406}
+{"group":{"id":2,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":2408}
+{"test":{"id":3,"name":"TS-013 TC-031: Groq langsung menampilkan keterangan dan pembanding","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":2,"root_column":22,"root_url":"file:///C:/Users/arysf/Documents/kuliah/PBL/Semester_5/PBL-KEL4_TI3C_SEM5/ecoplant/test/tcts_groq_rerun_tmp_test.dart"},"type":"testStart","time":2408}
+{"testID":3,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":7552}
+{"test":{"id":4,"name":"(tearDownAll)","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":50,"column":5,"url":"package:integration_test/integration_test.dart","root_line":2,"root_column":22,"root_url":"file:///C:/Users/arysf/Documents/kuliah/PBL/Semester_5/PBL-KEL4_TI3C_SEM5/ecoplant/test/tcts_groq_rerun_tmp_test.dart"},"type":"testStart","time":7552}
+{"testID":4,"messageType":"print","message":"Warning: integration_test plugin was not detected.","type":"print","time":7558}
+{"testID":4,"messageType":"print","message":"","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"If you're running the tests with `flutter drive`, please make sure your tests","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"are in the `integration_test/` directory of your package and use","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"`flutter test $path_to_test` to run it instead.","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"If you're running the tests with Android instrumentation or XCTest, this means","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"that you are not capturing test results properly! See the following link for","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"how to set up the integration_test plugin:","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"","type":"print","time":7559}
+{"testID":4,"messageType":"print","message":"https://docs.flutter.dev/testing/integration-tests","type":"print","time":7560}
+{"testID":4,"messageType":"print","message":"","type":"print","time":7560}
+{"testID":4,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":7560}
+{"success":true,"type":"done","time":7593}
