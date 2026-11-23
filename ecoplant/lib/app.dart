@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme.dart';
+import 'features/helpdesk/helpdesk_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/scan/scan_screen.dart';
@@ -67,8 +68,17 @@ class _AppShellState extends State<AppShell> {
             )
           : Text(['EcoPlant AI', 'Scan Daun', 'Riwayat'][_tab]),
       actions: _tab == 0
-          ? const [
-              Padding(
+          ? [
+              IconButton(
+                tooltip: 'Helpdesk',
+                icon: const Icon(Icons.support_agent_outlined),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HelpdeskScreen(),
+                  ),
+                ),
+              ),
+              const Padding(
                 padding: EdgeInsets.only(right: 20),
                 child: CircleAvatar(
                   radius: 17,
