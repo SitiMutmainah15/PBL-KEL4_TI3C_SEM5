@@ -1,9 +1,0 @@
-{"id": "TC-003", "status": "Pass", "actual": "Tombol Scan Daun membuka layar Scan dengan judul Mulai dari satu daun."}
-{"id": "TC-015", "status": "Pass", "actual": "Keadaan kosong, Buka Kamera, dan Pilih dari Galeri tampil. Aksi Analisis belum tampil."}
-{"id": "TC-004", "status": "Pass", "actual": "Tab Riwayat membuka halaman Pemeriksaan daun Anda."}
-{"id": "TC-026", "status": "Pass", "actual": "Riwayat kosong tampil, dan tombol Scan daun pertama membuka halaman Scan."}
-{"id": "TC-005", "status": "Pass", "actual": "Lihat semua membuka halaman Riwayat."}
-{"id": "TC-036", "status": "Not Run", "actual": "Tidak menemukan Bagaimana cara memindai daun?"}
-{"id": "TC-037", "status": "Pass", "actual": "Deskripsi kosong dan deskripsi berisi spasi sama-sama ditolak dengan Isi deskripsi kendala. Klien email tidak terbuka."}
-{"id": "TC-036", "status": "Pass", "actual": "Ketiga FAQ dapat dibuka dan ditutup. Kembali menampilkan Beranda."}
-{"id": "TC-038", "status": "Pass", "actual": "Klien email menampilkan penerima, subjek, kategori Riwayat, dan deskripsi sesuai data uji. Draf tidak dikirim."}

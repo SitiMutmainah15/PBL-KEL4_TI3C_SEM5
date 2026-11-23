@@ -1,2 +1,0 @@
-{"case": "TC-028", "result": "Pass", "actual": "Proses 3024 dihentikan dan diganti proses 3776. Riwayat membuka entri yang sama dengan confidence 87.3%; file foto fixture masih tersedia."}
-{"case": "TC-035", "result": "Pass", "actual": "Ikon Hapus dan konfirmasi mengosongkan riwayat. Setelah proses 3776 dihentikan, proses 4310 tetap menampilkan Belum ada hasil deteksi. Foto fixture terhapus."}
