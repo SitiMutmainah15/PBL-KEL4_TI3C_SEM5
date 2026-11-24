@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -90,6 +89,45 @@ class HistoryContent extends ConsumerWidget {
   final int? limit;
   final bool compact;
 
+  Future<void> _delete(
+    BuildContext context,
+    WidgetRef ref,
+    DetectionResult item,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus riwayat?'),
+        content: const Text(
+          'Foto asli dan data hasil deteksi ini akan dihapus dari perangkat.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(historyRepositoryProvider).delete(item.id);
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Riwayat gagal dihapus: $error')),
+        );
+      }
+    } finally {
+      if (context.mounted) ref.invalidate(historyProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.watch(historyProvider).when(
@@ -104,7 +142,7 @@ class HistoryContent extends ConsumerWidget {
             error is ServiceFailure
                 ? error.message
                 : 'Riwayat gagal dimuat. '
-                  'Periksa koneksi Anda lalu coba lagi.',
+                  'Periksa penyimpanan aplikasi lalu coba lagi.',
             error: true,
           ),
 
@@ -171,6 +209,7 @@ class HistoryContent extends ConsumerWidget {
                 child: _HistoryCard(
                   item: item,
                   compact: compact,
+                  onDelete: compact ? null : () => _delete(context, ref, item),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
@@ -358,11 +397,13 @@ class _HistoryCard extends StatelessWidget {
     required this.item,
     required this.compact,
     required this.onTap,
+    this.onDelete,
   });
 
   final DetectionResult item;
   final bool compact;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -497,11 +538,21 @@ class _HistoryCard extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 20,
-                    color: _muted,
-                  ),
+                  if (onDelete != null)
+                    IconButton(
+                      tooltip: 'Hapus riwayat',
+                      onPressed: onDelete,
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Color(0xFFA04B43),
+                      ),
+                    )
+                  else
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 20,
+                      color: _muted,
+                    ),
                 ],
               ),
 

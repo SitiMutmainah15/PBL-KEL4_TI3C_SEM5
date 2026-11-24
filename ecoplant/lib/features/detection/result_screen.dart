@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import '../../core/widgets.dart';
 import '../history/history_repository.dart';
 import 'caption_section.dart';
 import 'detection.dart';
+import 'leaf_caption.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({
@@ -40,6 +40,18 @@ class _ResultScreenState
   bool _saving = false;
   bool _saved = false;
   String? _error;
+  late Future<LeafCaption> _caption = _load();
+
+  Future<LeafCaption> _load() {
+    final service = ref.read(captionServiceProvider);
+    final cache = ref.read(captionCacheProvider);
+    return Future<LeafCaption>(() => cache.load(widget.result, service));
+  }
+
+  void _retryCaption() {
+    ref.read(captionCacheProvider).invalidate(widget.result);
+    setState(() => _caption = _load());
+  }
 
   // =========================================
   // FUNGSI SIMPAN RIWAYAT ASLI
@@ -89,85 +101,108 @@ class _ResultScreenState
   Widget build(BuildContext context) {
     final result = widget.result;
 
-    return Scaffold(
-      backgroundColor: _background,
+    return FutureBuilder<LeafCaption>(
+      future: _caption,
+      builder: (context, snapshot) {
+        final caption = snapshot.data;
+        final notLeaf = caption?.subject == CaptionSubject.notLeaf;
+        final checking = snapshot.connectionState == ConnectionState.waiting;
 
-      appBar: _buildAppBar(),
+        return Scaffold(
+          backgroundColor: _background,
 
-      body: ColoredBox(
-        color: _background,
-        child: PageBody(
-          children: [
-            const SizedBox(height: 20),
+          appBar: _buildAppBar(),
 
-            // Status khusus ketika membuka riwayat.
-            if (widget.fromHistory) ...[
-              _buildHistoryStatus(),
+          body: ColoredBox(
+            color: _background,
+            child: PageBody(
+              children: [
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 16),
-            ],
+                // Status khusus ketika membuka riwayat.
+                if (widget.fromHistory) ...[
+                  _buildHistoryStatus(),
 
-            // Foto asli hasil pemindaian.
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: LeafPhoto(
-                path: result.imagePath,
-                height: 240,
-              ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Foto asli hasil pemindaian.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: LeafPhoto(
+                    path: result.imagePath,
+                    height: 240,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Card hasil identifikasi dan confidence.
+                _buildResultCard(result, notLeaf: notLeaf),
+
+                const SizedBox(height: 30),
+
+                // Penjelasan AI tetap menggunakan
+                // komponen CaptionSection asli.
+                if (notLeaf) ...[
+                  const Notice(
+                    'Arahkan kamera ke satu daun pisang yang memenuhi layar, '
+                    'dengan cahaya cukup, lalu pindai ulang.',
+                  ),
+                  if (caption != null) ...[
+                    const SizedBox(height: 12),
+                    Text(caption.photoTip),
+                  ],
+                ] else
+                  CaptionSection(
+                    result: result,
+                    request: _caption,
+                    onRetry: _retryCaption,
+                  ),
+
+                const SizedBox(height: 24),
+
+                // Disclaimer asli.
+                _buildDisclaimer(),
+
+                // Error penyimpanan.
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+
+                  Notice(
+                    _error!,
+                    error: true,
+                  ),
+                ],
+
+                // Loading penyimpanan.
+                if (_saving) ...[
+                  const SizedBox(height: 16),
+
+                  const LoadingMessage(
+                    'Menyimpan riwayat...',
+                  ),
+                ],
+
+                // Notifikasi berhasil disimpan.
+                if (_saved) ...[
+                  const SizedBox(height: 16),
+
+                  _buildSavedNotice(),
+                ],
+
+                const SizedBox(height: 24),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 20),
-
-            // Card hasil identifikasi dan confidence.
-            _buildResultCard(result),
-
-            const SizedBox(height: 30),
-
-            // Penjelasan AI tetap menggunakan
-            // komponen CaptionSection asli.
-            CaptionSection(result: result),
-
-            const SizedBox(height: 24),
-
-            // Disclaimer asli.
-            _buildDisclaimer(),
-
-            // Error penyimpanan.
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-
-              Notice(
-                _error!,
-                error: true,
-              ),
-            ],
-
-            // Loading penyimpanan.
-            if (_saving) ...[
-              const SizedBox(height: 16),
-
-              const LoadingMessage(
-                'Menyimpan riwayat...',
-              ),
-            ],
-
-            // Notifikasi berhasil disimpan.
-            if (_saved) ...[
-              const SizedBox(height: 16),
-
-              _buildSavedNotice(),
-            ],
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-
-      // Tombol simpan dan scan ulang hanya
-      // ditampilkan pada hasil pemindaian baru.
-      bottomNavigationBar: widget.fromHistory
-          ? null
-          : _buildBottomActions(),
+          // Tombol simpan dan scan ulang hanya
+          // ditampilkan pada hasil pemindaian baru.
+          bottomNavigationBar: widget.fromHistory
+              ? null
+              : _buildBottomActions(notLeaf: notLeaf, checking: checking),
+        );
+      },
     );
   }
 
@@ -291,9 +326,9 @@ class _ResultScreenState
   // Identifikasi, status, tanggal, confidence.
   // =========================================
 
-  Widget _buildResultCard(DetectionResult result) {
+  Widget _buildResultCard(DetectionResult result, {required bool notLeaf}) {
     final bool isHealthy =
-        result.predictedClass == LeafClass.healthy;
+        !notLeaf && result.predictedClass == LeafClass.healthy;
 
     final Color statusColor =
         isHealthy ? _secondary : _warning;
@@ -341,7 +376,7 @@ class _ResultScreenState
                 WrapCrossAlignment.center,
             children: [
               Text(
-                result.predictedClass.label,
+                notLeaf ? 'Bukan daun pisang' : result.predictedClass.label,
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w500,
@@ -377,7 +412,7 @@ class _ResultScreenState
                     const SizedBox(width: 6),
 
                     Text(
-                      isHealthy
+                      notLeaf ? 'Foto tidak sesuai' : isHealthy
                           ? 'Sehat'
                           : 'Perlu perhatian',
                       style: TextStyle(
@@ -430,7 +465,7 @@ class _ResultScreenState
           const SizedBox(height: 18),
 
           // Confidence model.
-          _buildConfidence(result),
+          _buildConfidence(result, notLeaf: notLeaf),
         ],
       ),
     );
@@ -441,7 +476,9 @@ class _ResultScreenState
   // Nilai tetap menggunakan data asli.
   // =========================================
 
-  Widget _buildConfidence(DetectionResult result) {
+  Widget _buildConfidence(DetectionResult result, {required bool notLeaf}) {
+    final confidence = notLeaf ? 0.0 : result.confidence;
+    final confidenceLabel = '${(confidence * 100).toStringAsFixed(1)}%';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -461,7 +498,7 @@ class _ResultScreenState
             const SizedBox(width: 8),
 
             Text(
-              result.confidenceLabel,
+              confidenceLabel,
               style: const TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.w500,
@@ -476,13 +513,13 @@ class _ResultScreenState
 
         Semantics(
           label: 'Confidence',
-          value: result.confidenceLabel,
+          value: confidenceLabel,
 
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
 
             child: LinearProgressIndicator(
-              value: result.confidence,
+              value: confidence,
               minHeight: 7,
               color: _secondary,
               backgroundColor: _softGreen,
@@ -492,10 +529,11 @@ class _ResultScreenState
 
         const SizedBox(height: 12),
 
-        const Text(
-          'Skor keluaran model, bukan tingkat '
-          'kepastian diagnosis.',
-          style: TextStyle(
+        Text(
+          notLeaf
+              ? 'Foto tidak dikenali sebagai daun pisang, jadi skor dibuat 0%.'
+              : 'Skor keluaran model, bukan tingkat kepastian diagnosis.',
+          style: const TextStyle(
             fontSize: 11,
             height: 1.6,
             color: _muted,
@@ -593,7 +631,7 @@ class _ResultScreenState
   // Khusus hasil deteksi baru.
   // =========================================
 
-  Widget _buildBottomActions() {
+  Widget _buildBottomActions({required bool notLeaf, required bool checking}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -621,56 +659,58 @@ class _ResultScreenState
 
             children: [
               // SIMPAN RIWAYAT
-              FilledButton.icon(
-                onPressed: _saving || _saved
-                    ? null
-                    : _save,
+              if (!notLeaf) ...[
+                FilledButton.icon(
+                  onPressed: _saving || _saved || checking
+                      ? null
+                      : _save,
 
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: _muted,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _muted,
+                          ),
+                        )
+                      : Icon(
+                          _saved
+                              ? Icons.check_rounded
+                              : Icons.bookmark_border_rounded,
+                          size: 21,
                         ),
-                      )
-                    : Icon(
-                        _saved
-                            ? Icons.check_rounded
-                            : Icons.bookmark_border_rounded,
-                        size: 21,
-                      ),
 
-                label: Text(
-                  _saving
-                      ? 'Menyimpan...'
-                      : _saved
-                          ? 'Tersimpan'
-                          : 'Simpan riwayat',
-                ),
-
-                style: FilledButton.styleFrom(
-                  backgroundColor: _primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: _softGreen,
-                  disabledForegroundColor: _muted,
-                  elevation: 0,
-                  minimumSize: const Size(0, 50),
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(14),
+                  label: Text(
+                    _saving
+                        ? 'Menyimpan...'
+                        : _saved
+                            ? 'Tersimpan'
+                            : 'Simpan riwayat',
                   ),
 
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: _softGreen,
+                    disabledForegroundColor: _muted,
+                    elevation: 0,
+                    minimumSize: const Size(0, 50),
+
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(14),
+                    ),
+
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
+              ],
 
               // SCAN ULANG
               OutlinedButton.icon(

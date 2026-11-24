@@ -1,9 +1,6 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme.dart';
-import '../../core/widgets.dart';
 import 'baseline_condition.dart';
 import 'detection.dart';
 import 'leaf_caption.dart';
@@ -23,53 +20,28 @@ const Color _border = Color(0xFFDDE4D7);
 // CAPTION SECTION
 // =========================================
 
-class CaptionSection extends ConsumerStatefulWidget {
+class CaptionSection extends StatefulWidget {
   const CaptionSection({
     super.key,
     required this.result,
+    required this.request,
+    required this.onRetry,
   });
 
   final DetectionResult result;
+  final Future<LeafCaption> request;
+  final VoidCallback onRetry;
 
   @override
-  ConsumerState<CaptionSection> createState() =>
-      _CaptionSectionState();
+  State<CaptionSection> createState() => _CaptionSectionState();
 }
 
-class _CaptionSectionState
-    extends ConsumerState<CaptionSection> {
-  Future<LeafCaption>? _request;
+class _CaptionSectionState extends State<CaptionSection> {
   bool _showBaseline = false;
 
-  // =========================================
-  // LOGIKA AI ASLI — TIDAK DIUBAH
-  // =========================================
-
-  @override
-  void initState() {
-    super.initState();
-    _request = _load();
-  }
-
-  Future<LeafCaption> _load() {
-    final service = ref.read(captionServiceProvider);
-    final cache = ref.read(captionCacheProvider);
-
-    // Mekanisme pengambilan caption asli.
-    return Future<LeafCaption>(
-      () => cache.load(widget.result, service),
-    );
-  }
-
   void _retry() {
-    ref
-        .read(captionCacheProvider)
-        .invalidate(widget.result);
-
-    setState(() {
-      _showBaseline = false;
-      _request = _load();
-    });
+    widget.onRetry();
+    setState(() => _showBaseline = false);
   }
 
   // =========================================
@@ -79,7 +51,7 @@ class _CaptionSectionState
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<LeafCaption>(
-      future: _request,
+      future: widget.request,
       builder: (context, snapshot) {
         // Loading AI
         if (snapshot.connectionState ==

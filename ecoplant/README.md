@@ -1,9 +1,10 @@
 # EcoPlant AI
 
 Aplikasi Flutter Android untuk identifikasi awal kondisi daun pisang.
-Tahap saat ini: UI dan inisialisasi Firebase Core.
-Analisis TFLite serta sinkronisasi Cloud Firestore/Storage belum dihubungkan; tidak ada prediksi
-atau riwayat palsu pada aplikasi.
+Analisis memakai Random Forest (`forest.json`) secara on-device. Riwayat dan foto
+asli disimpan lokal menggunakan SQLite dan direktori privat aplikasi, sehingga
+fitur utama tetap tersedia tanpa koneksi internet. Firebase Core tetap
+dikonfigurasi; penyimpanan riwayat tidak bergantung pada Firestore.
 
 ```powershell
 flutter pub get

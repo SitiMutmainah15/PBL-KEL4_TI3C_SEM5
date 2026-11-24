@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ecoplant/core/storage/photo_storage.dart';
 import 'package:ecoplant/features/detection/detection.dart';
 import 'package:ecoplant/features/history/history_repository.dart';
 import 'package:ecoplant/features/scan/scan_controller.dart';
@@ -20,6 +21,14 @@ void main() {
       );
       await expectLater(
         const UnavailableHistoryRepository().save(fixture()),
+        throwsA(isA<ServiceFailure>()),
+      );
+      await expectLater(
+        const UnavailableHistoryRepository().update(fixture()),
+        throwsA(isA<ServiceFailure>()),
+      );
+      await expectLater(
+        const UnavailableHistoryRepository().delete('test'),
         throwsA(isA<ServiceFailure>()),
       );
     },
@@ -46,6 +55,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           galleryServiceProvider.overrideWithValue(gallery),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           imageValidatorProvider.overrideWithValue((_) async {}),
         ],
       );
@@ -63,6 +73,7 @@ void main() {
   test('corrupt image rejected before replacing valid preview', () async {
     final container = ProviderContainer(
       overrides: [
+        photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
         imageValidatorProvider.overrideWithValue((path) async {
           if (path == 'bad') throw const ServiceFailure('Foto gagal dibaca.');
         }),
@@ -83,6 +94,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           detectionServiceProvider.overrideWithValue(service),
+          photoStorageProvider.overrideWithValue(const TestPhotoStorage()),
           imageValidatorProvider.overrideWithValue((_) async {}),
         ],
       );

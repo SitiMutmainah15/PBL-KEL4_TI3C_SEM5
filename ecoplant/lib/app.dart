@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'core/theme.dart';
+import 'features/helpdesk/helpdesk_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/scan/scan_screen.dart';
@@ -44,6 +45,15 @@ class _AppShellState extends State<AppShell> {
     setState(() => _tab = value);
   }
 
+  // Membuka halaman Helpdesk dari branch main.
+  void _openHelpdesk() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const HelpdeskScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,16 +61,15 @@ class _AppShellState extends State<AppShell> {
 
       appBar: _buildAppBar(),
 
-      // Fungsi navigasi asli tetap dipertahankan.
       body: switch (_tab) {
         0 => HomeScreen(
-          onScan: () => _select(1),
-          onHistory: () => _select(2),
-        ),
+            onScan: () => _select(1),
+            onHistory: () => _select(2),
+          ),
         1 => const ScanScreen(),
         _ => HistoryScreen(
-          onScan: () => _select(1),
-        ),
+            onScan: () => _select(1),
+          ),
       },
 
       bottomNavigationBar: _buildNavigationBar(),
@@ -88,7 +97,6 @@ class _AppShellState extends State<AppShell> {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
 
-      // Judul halaman di kiri.
       title: Text(
         ['Home', 'Scan Daun', 'Riwayat'][_tab],
         style: const TextStyle(
@@ -99,8 +107,20 @@ class _AppShellState extends State<AppShell> {
         ),
       ),
 
-      // Logo EcoPlant di kanan.
       actions: [
+        // Helpdesk hanya ditampilkan pada halaman Home.
+        if (_tab == 0)
+          IconButton(
+            tooltip: 'Helpdesk',
+            onPressed: _openHelpdesk,
+            icon: const Icon(
+              Icons.support_agent_outlined,
+              color: _primary,
+              size: 25,
+            ),
+          ),
+
+        // Logo EcoPlant.
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: Center(
@@ -143,6 +163,7 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
       ),
+
       child: NavigationBarTheme(
         data: NavigationBarThemeData(
           backgroundColor: Colors.white,

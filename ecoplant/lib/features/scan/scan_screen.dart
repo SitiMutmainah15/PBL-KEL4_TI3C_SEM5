@@ -49,7 +49,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     );
 
     if (path != null && mounted) {
-      await ref.read(scanProvider.notifier).select(path);
+      await ref
+          .read(scanProvider.notifier)
+          .select(path, deleteTemporarySource: true);
     }
   }
 

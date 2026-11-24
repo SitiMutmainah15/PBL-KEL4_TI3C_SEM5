@@ -1,23 +1,25 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 import 'detection.dart';
+import 'groq_caption_service.dart';
 
-/// Alamat backend caption. Ubah lewat
-/// `--dart-define=ECOPLANT_API_BASE_URL=http://host:8080`.
-String get captionApiBaseUrl {
-  const configured = String.fromEnvironment('ECOPLANT_API_BASE_URL');
-  if (configured.isNotEmpty) return configured;
-  if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:8080';
-  return 'http://127.0.0.1:8080';
+/// Apa yang terlihat pada foto menurut model bahasa. Hanya [notLeaf] yang
+/// membuat skor deteksi ditampilkan 0%.
+enum CaptionSubject {
+  bananaLeaf,
+  notLeaf,
+  unclear;
+
+  static CaptionSubject fromJson(Object? raw) => switch (raw) {
+    'daun_pisang' => CaptionSubject.bananaLeaf,
+    'bukan_daun' => CaptionSubject.notLeaf,
+    _ => CaptionSubject.unclear,
+  };
 }
 
-/// Teks pendamping hasil satu permintaan ke backend.
+/// Teks pendamping hasil satu permintaan ke Groq.
 class LeafCaption {
   const LeafCaption({
     required this.summary,
@@ -25,16 +27,20 @@ class LeafCaption {
     required this.photoTip,
     required this.imageMatches,
     this.detectedLabel = '',
+    this.subject = CaptionSubject.unclear,
   });
 
   final String summary;
   final String treatment;
   final String photoTip;
 
+  /// `notLeaf` bila objek utama foto bukan daun pisang.
+  final CaptionSubject subject;
+
   /// `false` bila model bahasa menilai foto tidak layak dibaca.
   final bool imageMatches;
 
-  /// Nama kelas yang disebut model bahasa, bisa berbeda dari keluaran TFLite.
+  /// Nama kelas yang disebut model bahasa, bisa berbeda dari keluaran model.
   final String detectedLabel;
 
   static LeafCaption? fromJson(Object? raw) {
@@ -61,10 +67,12 @@ class LeafCaption {
       photoTip: photoTip,
       imageMatches: matches is bool ? matches : true,
       detectedLabel: label is String ? label.trim() : '',
+      subject: CaptionSubject.fromJson(raw['subjek']),
     );
   }
 }
 
+/// Melempar [ServiceFailure] yang pesannya sudah layak ditampilkan.
 abstract interface class CaptionService {
   Future<LeafCaption> describe({
     required DetectionResult result,
@@ -72,86 +80,10 @@ abstract interface class CaptionService {
   });
 }
 
-/// Melempar [ServiceFailure] yang pesannya sudah layak ditampilkan.
-class HttpCaptionService implements CaptionService {
-  HttpCaptionService({http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      _baseUrl = (baseUrl ?? captionApiBaseUrl).replaceAll(RegExp(r'/+$'), '');
-
-  final http.Client _client;
-  final String _baseUrl;
-
-  /// Batas menyambung sengaja pendek. Salah alamat adalah penyebab tersering,
-  /// dan menunggu satu menit hanya membuat pengguna melihat status memuat.
-  static const _connectTimeout = Duration(seconds: 8);
-  static const _totalTimeout = Duration(seconds: 50);
-
-  @override
-  Future<LeafCaption> describe({
-    required DetectionResult result,
-    required String locale,
-  }) async {
-    final file = File(result.imagePath);
-    if (!await file.exists()) {
-      throw const ServiceFailure(
-        'Foto tidak ditemukan di perangkat, jadi keterangan tambahan tidak dapat dibuat.',
-      );
-    }
-
-    final request =
-        http.MultipartRequest('POST', Uri.parse('$_baseUrl/v1/caption'))
-          ..fields['label'] = result.predictedClass.name
-          ..fields['confidence'] = result.confidence.toStringAsFixed(4)
-          ..fields['locale'] = locale
-          ..files.add(await http.MultipartFile.fromPath('image', file.path));
-
-    http.Response response;
-    try {
-      final streamed = await _client.send(request).timeout(_connectTimeout);
-      response = await http.Response.fromStream(
-        streamed,
-      ).timeout(_totalTimeout);
-    } on TimeoutException {
-      throw ServiceFailure(
-        'Layanan keterangan di $_baseUrl tidak menjawab. '
-        'Periksa apakah backend berjalan dan alamatnya benar.',
-      );
-    } catch (_) {
-      throw ServiceFailure(
-        'Tidak dapat menghubungi layanan keterangan di $_baseUrl. '
-        'Periksa koneksi dan pastikan backend berjalan.',
-      );
-    }
-
-    Map<String, dynamic>? body;
-    try {
-      final decoded = jsonDecode(response.body);
-      if (decoded is Map<String, dynamic>) body = decoded;
-    } catch (_) {
-      body = null;
-    }
-
-    if (response.statusCode != 200) {
-      final message = body?['error'];
-      throw ServiceFailure(
-        message is String && message.trim().isNotEmpty
-            ? message.trim()
-            : 'Keterangan tambahan gagal dibuat. Coba lagi nanti.',
-      );
-    }
-
-    final caption = LeafCaption.fromJson(body);
-    if (caption == null) {
-      throw const ServiceFailure(
-        'Keterangan tambahan tidak lengkap. Coba muat ulang.',
-      );
-    }
-    return caption;
-  }
-}
-
+/// Aplikasi selalu memanggil Groq langsung. Bila APK dibangun tanpa
+/// GROQ_API_KEY, layar hasil menampilkan pesan dan keterangan umum.
 final captionServiceProvider = Provider<CaptionService>(
-  (ref) => HttpCaptionService(),
+  (ref) => GroqCaptionService(),
 );
 
 /// Menyimpan permintaan caption per hasil supaya membuka layar yang sama
