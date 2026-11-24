@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'core/theme.dart';
 import 'features/helpdesk/helpdesk_screen.dart';
@@ -11,14 +13,16 @@ class EcoPlantApp extends StatelessWidget {
   const EcoPlantApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'EcoPlant AI',
-    debugShowCheckedModeBanner: false,
-    theme: appTheme(),
-
-    // Splash Screen tampil pertama kali.
-    home: const SplashScreen(nextScreen: AppShell()),
-  );
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'EcoPlant AI',
+      debugShowCheckedModeBanner: false,
+      theme: appTheme(),
+      home: const SplashScreen(
+        nextScreen: AppShell(),
+      ),
+    );
+  }
 }
 
 class AppShell extends StatefulWidget {
@@ -29,106 +33,203 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+  static const Color _background = Color(0xFFF7F8F3);
+  static const Color _primary = Color(0xFF164D2C);
+  static const Color _muted = Color(0xFF637367);
+  static const Color _softGreen = Color(0xFFE7EDDF);
+  static const Color _border = Color(0xFFDDE4D7);
+
   int _tab = 0;
 
   void _select(int value) {
     setState(() => _tab = value);
   }
 
+  // Membuka halaman Helpdesk dari branch main.
+  void _openHelpdesk() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const HelpdeskScreen(),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.white,
-      title: _tab == 0
-          ? const Row(
-              children: [
-                Icon(Icons.eco_rounded, color: Color(0xFF4F7B3A)),
-                SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ECOPLANT AI',
-                      style: TextStyle(
-                        fontSize: 10,
-                        letterSpacing: 1,
-                        color: Color(0xFF667066),
-                      ),
-                    ),
-                    Text(
-                      'Home',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : Text(['EcoPlant AI', 'Scan Daun', 'Riwayat'][_tab]),
-      actions: _tab == 0
-          ? [
-              IconButton(
-                tooltip: 'Helpdesk',
-                icon: const Icon(Icons.support_agent_outlined),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const HelpdeskScreen(),
-                  ),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: CircleAvatar(
-                  radius: 17,
-                  backgroundColor: Color(0xFF4F7B3A),
-                  child: Icon(
-                    Icons.person_outline,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ]
-          : null,
-    ),
-    body: switch (_tab) {
-      0 => HomeScreen(onScan: () => _select(1), onHistory: () => _select(2)),
-      1 => const ScanScreen(),
-      _ => HistoryScreen(onScan: () => _select(1)),
-    },
-    bottomNavigationBar: NavigationBar(
-      height: 70,
-      selectedIndex: _tab,
-      onDestinationSelected: _select,
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Beranda',
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _background,
+
+      appBar: _buildAppBar(),
+
+      body: switch (_tab) {
+        0 => HomeScreen(
+            onScan: () => _select(1),
+            onHistory: () => _select(2),
+          ),
+        1 => const ScanScreen(),
+        _ => HistoryScreen(
+            onScan: () => _select(1),
+          ),
+      },
+
+      bottomNavigationBar: _buildNavigationBar(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: _background,
+      foregroundColor: _primary,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      toolbarHeight: 64,
+      titleSpacing: 20,
+
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+
+      title: Text(
+        ['Home', 'Scan Daun', 'Riwayat'][_tab],
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w500,
+          letterSpacing: -0.6,
+          color: _primary,
         ),
-        NavigationDestination(
-          icon: _ScanNavigationIcon(),
-          selectedIcon: _ScanNavigationIcon(),
-          label: 'Scan',
+      ),
+
+      actions: [
+        // Helpdesk hanya ditampilkan pada halaman Home.
+        if (_tab == 0)
+          IconButton(
+            tooltip: 'Helpdesk',
+            onPressed: _openHelpdesk,
+            icon: const Icon(
+              Icons.support_agent_outlined,
+              color: _primary,
+              size: 25,
+            ),
+          ),
+
+        // Logo EcoPlant.
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(9),
+              child: Image.asset(
+                'assets/icons/LOGO.png',
+                width: 34,
+                height: 34,
+                fit: BoxFit.contain,
+                excludeFromSemantics: true,
+              ),
+            ),
+          ),
         ),
-        NavigationDestination(icon: Icon(Icons.history), label: 'Riwayat'),
       ],
-    ),
-  );
-}
 
-class _ScanNavigationIcon extends StatelessWidget {
-  const _ScanNavigationIcon();
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(1),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Divider(
+            height: 1,
+            thickness: 0.7,
+            color: _border,
+          ),
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(9),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4F7B3A),
-      borderRadius: BorderRadius.circular(13),
-    ),
-    child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 22),
-  );
+  Widget _buildNavigationBar() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: _border,
+            width: 0.7,
+          ),
+        ),
+      ),
+
+      child: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: _softGreen,
+          elevation: 0,
+
+          labelTextStyle:
+              WidgetStateProperty.resolveWith<TextStyle>(
+            (states) {
+              final selected =
+                  states.contains(WidgetState.selected);
+
+              return TextStyle(
+                fontSize: 12,
+                fontWeight: selected
+                    ? FontWeight.w500
+                    : FontWeight.w400,
+                color: selected ? _primary : _muted,
+              );
+            },
+          ),
+
+          iconTheme:
+              WidgetStateProperty.resolveWith<IconThemeData>(
+            (states) {
+              final selected =
+                  states.contains(WidgetState.selected);
+
+              return IconThemeData(
+                size: 24,
+                color: selected ? _primary : _muted,
+              );
+            },
+          ),
+        ),
+
+        child: NavigationBar(
+          height: 68,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          indicatorColor: _softGreen,
+          selectedIndex: _tab,
+          onDestinationSelected: _select,
+
+          labelBehavior:
+              NavigationDestinationLabelBehavior.alwaysShow,
+
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Beranda',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.camera_alt_outlined),
+              selectedIcon: Icon(Icons.camera_alt_rounded),
+              label: 'Scan',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history_rounded),
+              label: 'Riwayat',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

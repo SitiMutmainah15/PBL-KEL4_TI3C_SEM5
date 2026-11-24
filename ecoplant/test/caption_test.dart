@@ -112,13 +112,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Layanan caption tidak dapat dihubungi.'), findsOneWidget);
-    expect(find.text('Coba Lagi'), findsOneWidget);
+    expect(find.text('Coba lagi'), findsOneWidget);
     expect(find.text('Tentang kondisi ini'), findsNothing);
 
     service
       ..error = null
       ..caption = sampleCaption;
-    await tester.tap(find.text('Coba Lagi'));
+    await tester.tap(find.text('Coba lagi'));
     await tester.pumpAndSettle();
 
     expect(find.text(sampleCaption.summary), findsOneWidget);
@@ -138,7 +138,7 @@ void main() {
 
     expect(find.text('Tentang kondisi ini'), findsOneWidget);
     expect(find.text('Penanganan awal'), findsOneWidget);
-    expect(find.text('Coba Lagi'), findsOneWidget);
+    expect(find.text('Coba lagi'), findsOneWidget);
   });
 
   testWidgets('unreadable photo changes the tip heading', (tester) async {
